@@ -20,7 +20,11 @@ from django.urls import path, include
 from django.apps import apps
 
 
-urlpatterns = [path("admin/", admin.site.urls), path("", include("core.urls"))]
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", include("core.urls")),
+    path("accounts/", include("accounts.urls")),
+]
 
 if apps.is_installed("debug_toolbar"):
     urlpatterns += [

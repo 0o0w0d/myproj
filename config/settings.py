@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "django_htmx",
     # local apps
     "core",
+    "accounts",
 ]
 
 if DEBUG:
@@ -117,6 +118,9 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# Custom User model
+AUTH_USER_MODEL = "accounts.User"
 
 
 # Password validation
