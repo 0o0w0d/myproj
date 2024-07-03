@@ -1,0 +1,26 @@
+{% load static %}
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>myproj</title>
+  {% if debug %}
+  <script src="{% static 'htmx/2.0.0/htmx.js' %}"></script>
+  {% else %}
+  <script src="{% static 'htmx/2.0.0/htmx.min.js' %}"></script>
+  {% endif %}
+  <script src="{% static 'htmx/ext/hx-get-with-timestamp.js' %}"></script>
+</head>
+{# htmx 요청에서 자동으로 요청 헤더에 csrf token 전송 #}
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <h1>프로젝트</h1>
+  
+  {% block content %}{% endblock content %}
+
+  <hr />
+  &copy; demo
+ 
+  {% block script %}{% endblock script %}
+</body>
+</html>
