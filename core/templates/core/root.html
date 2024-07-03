@@ -1,8 +1,11 @@
 {% extends "core/base.html" %}
+{% load component_tags %}
 
 {% block content %}
 
 <div>root.html</div>
+
+  {% component "modal-form" %}{% endcomponent %}
 
 {% endblock content %}
 

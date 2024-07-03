@@ -52,8 +52,12 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
+    # "django.contrib.staticfiles",
+    "django_components.safer_staticfiles",
     # third apps
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "django_components",
     "django_extensions",
     "template_partials",
     "django_htmx",
@@ -86,7 +90,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [  # add django-component management path
+            BASE_DIR / "core" / "src-django-components",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -149,6 +155,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATICFILES_DIRS = [
+    BASE_DIR / "core" / "src-django-components",
+]
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -159,3 +170,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
 
 INTERNAL_IPS = env.list("INTERNAL_IPS", default=["127.0.0.1"])
+
+
+# django-crispy-forms
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+# django-components config ( context variable handling )
+
+COMPONENTS = {"slot_context_behavior": "allow_override"}  # default: "prefer_root"
