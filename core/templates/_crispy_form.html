@@ -1,0 +1,21 @@
+{# form만 담는 _crispy_form.html #}
+
+{# crispy template 태그에서는 첫번째 인자의 form 인스턴스에서 helper 속성이 있으면 helper를 자동으로 활용 #}  
+{# {% crispy form %} #}
+
+{% load crispy_forms_tags %}
+
+<div class="row py-5">
+  <div class="col-sm-8 offset-sm-2">
+    <div class="card">
+        {% if form_title %}
+            <div class="card-header">
+                {{ form_title }}
+            </div>
+        {% endif %}
+        <div class="card-body">
+            {% crispy form form.helper %}
+        </div>
+    </div>
+  </div>
+</div>

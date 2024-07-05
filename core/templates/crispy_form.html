@@ -1,0 +1,11 @@
+{# crispy 라이브러리를 이용해서 공용 폼 템플릿 생성 #}
+
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+  {% include "_crispy_form.html" with form=form form_title=form_title %}
+
+{% endblock content %}
+
