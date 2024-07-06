@@ -8,6 +8,7 @@ from django.contrib.auth.views import (
 from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -77,7 +78,7 @@ def profile(request):
     return render(request, "accounts/profile.html")
 
 
-class ProfileUpdateView(UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
     form_class = ProfileForm
     template_name = "crispy_form.html"
@@ -85,6 +86,8 @@ class ProfileUpdateView(UpdateView):
     success_url = reverse_lazy("accounts:profile")
 
     def get_object(self, queryset=None) -> Optional[Profile]:
+        if not self.request.user.is_authenticated:
+            return None
         try:
             return self.request.user.profile
         except Profile.DoesNotExist:
