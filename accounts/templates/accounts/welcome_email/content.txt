@@ -1,0 +1,4 @@
+Dear {{ username }},
+Enjoy our service!
+
+- Sincerely, your friend

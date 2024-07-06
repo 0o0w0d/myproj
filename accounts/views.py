@@ -11,6 +11,7 @@ from django.urls import reverse_lazy
 
 from .forms import LoginForm, SignUpForm
 from .models import User
+from .utils import send_welcome_email
 
 
 class LoginView(DjangoLoginView):
@@ -46,6 +47,9 @@ class SignupView(CreateView):
     def form_valid(self, form) -> HttpResponse:
         response = super().form_valid(form)
         messages.success(self.request, "Welcome you to join our service!")
+
+        user = self.object
+        send_welcome_email(user, fail_silently=True)
         return response
 
 
