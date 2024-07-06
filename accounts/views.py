@@ -8,7 +8,7 @@ from django.views.generic import CreateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from .forms import LoginForm, SignUpForm
@@ -19,6 +19,7 @@ from .utils import send_welcome_email
 class LoginView(DjangoLoginView):
     form_class = LoginForm
     template_name = "crispy_form.html"
+    redirect_authenticated_user = True
 
     # context 추가
     extra_context = {"form_title": "Login"}
@@ -56,6 +57,18 @@ class SignupView(RedirectURLMixin, CreateView):
 
         send_welcome_email(user, fail_silently=True)
         return response
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            redirect_to = self.success_url
+            if redirect_to == self.request.path:
+                raise ValueError(
+                    "Redirection loop for authenticated user detected. Check that "
+                    "your REDIRECT_URL doesn't point to a signup page."
+                )
+            messages.warning(request, "Login user can't sign up :(")
+            return HttpResponseRedirect(redirect_to)
+        return super().dispatch(request, *args, **kwargs)
 
 
 @login_required
