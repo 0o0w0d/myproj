@@ -25,7 +25,7 @@
       <ul class="nav">
         {% if not user.is_authenticated %}
           <li class="nav-item"><a href="{% url 'accounts:login' %}" class="nav-link link-body-emphasis px-2">Login</a></li>
-          <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">Sign up</a></li>
+          <li class="nav-item"><a href="{% url 'accounts:signup' %}" class="nav-link link-body-emphasis px-2">Sign up</a></li>
         {% else %}
           <li class="nav-item"><a href="{% url 'accounts:profile' %}" class="nav-link link-body-emphasis px-2">Profile</a></li>
           <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2" hx-post="{% url 'accounts:logout' %}" hx-target="body" hx-push-url="true">Logout</a></li>
@@ -45,7 +45,7 @@
   </header>
 
 
-  {% include "_messages_as_event.html" %}
+
   
   <main class="py-5">
     <div class="container">
@@ -66,9 +66,11 @@
   <script src="{% static 'htmx/2.0.0/htmx.min.js' %}"></script>
   {% endif %}
   <script src="{% static 'htmx/ext/hx-get-with-timestamp.js' %}"></script>
-  <script src="{% static 'toast-messages.js' %}"></script>
   <script src="{% static "bootstrap/5.3.3/js/bootstrap.min.js" %}"></script>
   {% component_js_dependencies %}
+  <script src="{% static "toast-messages.js" %}"></script>
+  {% include "_messages_as_event.html" %}
+  
   {% block script %}{% endblock script %}
 </body>
 </html>
