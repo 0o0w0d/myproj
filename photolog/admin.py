@@ -1,3 +1,13 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Note, Photo
+
+
+@admin.register(Note)
+class NoteAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Photo)
+class PhotoAdmin(admin.ModelAdmin):
+    pass
