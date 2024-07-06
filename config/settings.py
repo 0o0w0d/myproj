@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import sys
 from pathlib import Path
 from environ import Env
+from django.core.exceptions import ImproperlyConfigured
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -186,3 +187,22 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # django-components config ( context variable handling )
 
 COMPONENTS = {"slot_context_behavior": "allow_override"}  # default: "prefer_root"
+
+
+# email config
+EMAIL_HOST = env.str("EMAIL_HOST", default=None)
+
+if DEBUG and EMAIL_HOST is None:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    try:
+        EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+        EMAIL_PORT = env.int("EMAIL_PORT")
+        EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+        EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
+        EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
+        EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
+        DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
+    except ImproperlyConfigured as e:
+        print("ERROR:", e, file=sys.stderr)
+        EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
