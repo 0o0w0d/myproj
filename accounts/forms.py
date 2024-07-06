@@ -1,10 +1,11 @@
+from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 from django.forms import ValidationError
 
-from .models import User
+from .models import Profile, User
 
 
 class LoginForm(AuthenticationForm):
@@ -35,3 +36,15 @@ class SignUpForm(UserCreationForm):
             if user.exists():
                 raise ValidationError("email already exists :(")
         return email
+
+
+class ProfileForm(forms.ModelForm):
+    # if modelForm in imageField/FieldField, automatically add enctype="multipart/form-data"
+    helper = FormHelper()
+    helper.attrs = {"novalidate": True}
+    helper.layout = Layout("avatar")
+    helper.add_input(Submit("submit", "save", css_class="w-100"))
+
+    class Meta:
+        model = Profile
+        fields = ["avatar"]

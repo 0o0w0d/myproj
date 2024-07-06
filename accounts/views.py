@@ -1,18 +1,19 @@
+from typing import Optional
 from django.shortcuts import render
 from django.contrib.auth.views import (
     LoginView as DjangoLoginView,
     LogoutView as DjangoLogoutView,
     RedirectURLMixin,
 )
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from .forms import LoginForm, SignUpForm
-from .models import User
+from .forms import LoginForm, ProfileForm, SignUpForm
+from .models import Profile, User
 from .utils import send_welcome_email
 
 
@@ -74,3 +75,25 @@ class SignupView(RedirectURLMixin, CreateView):
 @login_required
 def profile(request):
     return render(request, "accounts/profile.html")
+
+
+class ProfileUpdateView(UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = "crispy_form.html"
+    extra_context = {"form_title": "Profile Edit"}
+    success_url = reverse_lazy("accounts:profile")
+
+    def get_object(self, queryset=None) -> Optional[Profile]:
+        try:
+            return self.request.user.profile
+        except Profile.DoesNotExist:
+            # None이 지정되면 생성으로 동작
+            return None
+
+    def form_valid(self, form):
+        profile = form.save(commit=False)
+        profile.user = self.request.user
+        response = super().form_valid(form)
+        messages.success(self.request, "successfully profile saved :)")
+        return response
