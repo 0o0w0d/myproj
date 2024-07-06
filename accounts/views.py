@@ -2,13 +2,14 @@ from django.shortcuts import render
 from django.contrib.auth.views import (
     LoginView as DjangoLoginView,
     LogoutView as DjangoLogoutView,
+    RedirectURLMixin,
 )
 from django.views.generic import CreateView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from django.contrib import messages
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.contrib.auth import login
 
 from .forms import LoginForm, SignUpForm
 from .models import User
@@ -37,7 +38,7 @@ class LogoutView(DjangoLogoutView):
         return response
 
 
-class SignupView(CreateView):
+class SignupView(RedirectURLMixin, CreateView):
     model = User
     form_class = SignUpForm
     template_name = "crispy_form.html"
