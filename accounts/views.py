@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
 from django.urls import reverse_lazy
+from django.contrib.auth import login
 
 from .forms import LoginForm, SignUpForm
 from .models import User
@@ -41,7 +42,7 @@ class SignupView(CreateView):
     form_class = SignUpForm
     template_name = "crispy_form.html"
     extra_context = {"form_title": "Sign Up"}
-    success_url = reverse_lazy("accounts:login")
+    success_url = reverse_lazy("accounts:profile")
 
     # 유효성 검사 후에 폼 처리 결과를 마무리하는 메서드
     def form_valid(self, form) -> HttpResponse:
@@ -49,6 +50,9 @@ class SignupView(CreateView):
         messages.success(self.request, "Welcome you to join our service!")
 
         user = self.object
+        login(self.request, user)
+        messages.success(self.request, "Automatically login after signup :)")
+
         send_welcome_email(user, fail_silently=True)
         return response
 
