@@ -10,7 +10,9 @@ from .forms import NoteForm
 
 
 def index(request):
-    return render(request, "photolog/index.html")
+    qs = Note.objects.all().select_related("author").prefetch_related("photo_set")
+
+    return render(request, "photolog/index.html", {"note_list": qs})
 
 
 class NoteCreateView(LoginRequiredMixin, CreateView):
