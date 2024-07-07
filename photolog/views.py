@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
 from django.urls import reverse_lazy
 
 
@@ -20,7 +20,7 @@ class NoteCreateView(LoginRequiredMixin, CreateView):
     form_class = NoteForm
     template_name = "crispy_form.html"
     extra_context = {"form_title": "New Note"}
-    success_url = reverse_lazy("photolog:index")  # TODO: detail 페이지 구현 후 변경
+    # success_url = reverse_lazy("photolog:index")  # TODO: detail 페이지 구현 후 변경
 
     def form_valid(self, form):
         new_note = form.save(commit=False)
@@ -35,3 +35,7 @@ class NoteCreateView(LoginRequiredMixin, CreateView):
         response = super().form_valid(form)
         messages.success(self.request, "new note saved! :)")
         return response
+
+
+class NoteDetailView(DetailView):
+    model = Note

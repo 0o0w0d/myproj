@@ -1,7 +1,7 @@
 {% load component_tags %}
 
 <div class="image-overlay-component {{ class }}"> 
-    <a {% if href %}href="{{ href }}"{% endif %} 
+    <a href="{% slot 'href' %}{% endslot %}" 
         {% if target %}target="{{ target }}"{% endif %}>
         <div class="ratio ratio-1x1">
             <img src="{% slot 'img-src' %}{% endslot %}" class="object-fit-cover border rounded" alt="">
