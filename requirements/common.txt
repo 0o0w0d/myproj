@@ -13,3 +13,5 @@ crispy-bootstrap5==2024.2
 
 # for using image
 pillow==10.4.0
+
+django-lifecycle==1.2.4
