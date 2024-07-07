@@ -1,8 +1,11 @@
 from io import BytesIO
 from os.path import splitext
+from typing import List
 from uuid import uuid4
 from django_lifecycle import LifecycleModelMixin, hook, BEFORE_SAVE
 from PIL import Image
+from django.core.files import File
+from django.core.files.base import ContentFile
 
 from django.db import models
 from django.utils import timezone
@@ -37,22 +40,53 @@ class Photo(LifecycleModelMixin, models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # List[File]를 저장하는 로직
+    @classmethod
+    def create_photos(cls, note: Note, photo_file_list: List[File]):
+        if not note.pk:
+            raise ValueError("cannot find note :<")
+
+        photo_list = []
+        for photo_file in photo_file_list:
+            # note=note인 Photo 인스턴스 생성
+            photo = cls(note=note)
+            photo.image.save(photo_file.name, photo_file, save=False)
+            photo_list.append(photo)
+
+        cls.objects.bulk_create(photo_list)
+
+        return photo_list
+
+    # 이미지 변환 로직을 별도 함수로 분리
+    @classmethod
+    def make_thumb(
+        cls,
+        image_file: File,
+        max_width: int = 1024,
+        max_height: int = 1204,
+        quality: int = 80,
+    ) -> File:
+        pil_image = Image.open(image_file)
+        max_size = (max_width, max_height)
+        pil_image.thumbnail(max_size)
+        if pil_image.mode == "RGBA":
+            pil_image = pil_image.convert("RGB")
+
+        thumb_name = splitext(image_file.name)[0] + ".jpg"
+        thumb_file = ContentFile(b"", name=thumb_name)
+        pil_image.save(thumb_file, format="jpeg", quality=quality)
+
+        return thumb_file
+
     # BEFORE_UPDATE: 기존 레코드를 수정해서 저장할 때 호출
     # BEFORE_CREATE: 새 레코드를 생성해서 저장할 때 호출
     # BEFORE_SAVE: 레코드 생성/수정 시 저장할 때 호출
     @hook(BEFORE_SAVE, when="image", has_changed=True)
     def on_image_changed(self):
         if self.image:
-            pil_image = Image.open(self.image.file)
-            MAX_SIZE = (1024, 1024)
-            pil_image.thumbnail(MAX_SIZE)
-            if pil_image.mode == "RGBA":
-                pil_image = pil_image.convert("RGB")
+            image_width = self.image.width  # 이미지 가로
+            image_extension = splitext(self.image.name)[-1].lower()  # 확장자명
 
-            io = BytesIO()
-            pil_image.save(io, format="jpeg", quality=60)
-            io.seek(0)
-
-            thumb_name = splitext(self.image.name)[0] + ".jpg"
-            # 새로운 파일명, 새로운 파일 내용, 모델 인스턴스의 save 자동 호출 여부
-            self.image.save(thumb_name, io, save=False)
+            if image_width > 1024 or image_extension not in (".jpg", "jpeg"):
+                thumb_file = self.make_thumb(self.image.file, 1024, 1024, 80)
+                self.image.save(thumb_file.name, thumb_file, save=False)

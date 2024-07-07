@@ -6,18 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>myproj</title>
   
-  {# css #}
+  <!-- css -->
   <link rel="stylesheet" href="{% static 'bootstrap/5.3.3/css/bootstrap.min.css' %}">
   {% component_css_dependencies %}
+  <!-- css end -->
 </head>
 {# htmx 요청에서 자동으로 요청 헤더에 csrf token 전송 #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   
+  <!-- header -->
   <nav class="py-2 bg-body-tertiary border-bottom">
     <div class="container d-flex flex-wrap">
       <ul class="nav me-auto">
         <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2 active" aria-current="page">Home</a></li>
-        <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">Features</a></li>
+        <li class="nav-item"><a href="{% url 'photolog:note_new' %}" class="nav-link link-body-emphasis px-2">New Note</a></li>
         <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">Pricing</a></li>
         <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">FAQs</a></li>
         <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">About</a></li>
@@ -44,23 +46,25 @@
       </form>
     </div>
   </header>
+  <!-- header end -->
 
-
-
-  
+  <!-- main -->
   <main class="py-5">
     <div class="container">
       {% block content %}{% endblock content %}
     </div>
   </main>
+  <!-- main end -->
 
+  <!-- footer -->
   <footer class="py-5 text-body-secondary">
     <div class="container">
       &copy; demo
     </div>
   </footer>
+  <!-- footer end -->
 
-  {# script #}
+  <!-- script -->
   {% if debug %}
   <script src="{% static 'htmx/2.0.0/htmx.js' %}"></script>
   {% else %}
@@ -71,6 +75,7 @@
   {% component_js_dependencies %}
   <script src="{% static "toast-messages.js" %}"></script>
   {% include "_messages_as_event.html" %}
+  <!-- script end -->
   
   {% block script %}{% endblock script %}
 </body>
