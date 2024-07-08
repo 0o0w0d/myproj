@@ -4,8 +4,8 @@
   border-radius: 50%;
 }
 
-/* 이미지 드래그 비활성화 */
 .carousel-component img {
   user-select: none;
   pointer-events: none;
+  -webkit-user-drag: none;
 }

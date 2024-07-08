@@ -18,5 +18,5 @@ class Carousel(Component):
         return {"img_url_list": img_url_list}
 
     class Media:
-        js = ["carousel/carousel.js"]
+        js = ["observe-node-insertion.js", "carousel/carousel.js"]
         css = {"all": ["carousel/carousel.css"]}
