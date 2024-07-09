@@ -6,6 +6,7 @@ from crispy_forms.layout import Layout, Submit
 from django.forms import ValidationError
 from django.core.files import File
 from django.core.files.base import ContentFile
+from django.forms import inlineformset_factory
 from PIL import Image
 
 from .models import Note, Photo
@@ -34,13 +35,17 @@ class MultipleImageField(forms.ImageField):
             return single_clean(data)
 
 
-class NoteForm(forms.ModelForm):
-    photos = MultipleImageField()
+class NoteCreateForm(forms.ModelForm):
+    photos = MultipleImageField(required=True)
 
-    helper = FormHelper()
-    helper.attrs = {"novalidate": True}
-    helper.layout = Layout("title", "content", "photos")
-    helper.add_input(Submit("submit", "save", css_class="w-100"))
+    # 클래스 변수로 선언한 FormHelper는 자식과 공유 => 인스턴스 변수로 선언해,
+    # NoteUpdateForm에서 FormHelper 속성을 override 가능하도록 설정
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.attrs = {"novalidate": True}
+        self.helper.layout = Layout("title", "content", "photos")
+        self.helper.add_input(Submit("submit", "save", css_class="w-100"))
 
     class Meta:
         model = Note
@@ -48,8 +53,9 @@ class NoteForm(forms.ModelForm):
 
     # 이미지 크기 조정 및 jpeg 변환 수행 -> 이미지 변환에 실패하면 유효성 검사 에러
     def clean_photos(self):
+        is_photo_required = self.fields["photos"].required
         photo_list: List[File] = self.cleaned_data.get("photos")
-        if not photo_list:
+        if not photo_list and is_photo_required:
             raise forms.ValidationError("require at least one image :<")
         elif photo_list:
             try:
@@ -57,3 +63,28 @@ class NoteForm(forms.ModelForm):
             except Exception as e:
                 raise forms.ValidationError(e) from e
         return photo_list
+
+
+# NoteUpdateForm에서는 form 태그를 생성하지 않도록 helepr 속성 지정
+class NoteUpdateForm(NoteCreateForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["photos"].required = False
+        self.helper.form_tag = False
+        self.helper.inputs = []
+
+
+class PhotoInlineForm(forms.ModelForm):
+
+    class Meta:
+        model = Photo
+        fields = ["image"]
+
+
+PhotoUpdateFormSet = inlineformset_factory(
+    parent_model=Note, model=Photo, form=PhotoInlineForm, extra=0, can_delete=True
+)
+
+# formset에서 form 태그 제거
+PhotoUpdateFormSet.helper = FormHelper()
+PhotoUpdateFormSet.helper.form_tag = False
