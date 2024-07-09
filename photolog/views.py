@@ -11,7 +11,13 @@ from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm
 
 
 def index(request):
-    qs = Note.objects.all().select_related("author").prefetch_related("photo_set")
+    qs = Note.objects.all()
+
+    tag_name = request.GET.get("tag", "").strip()
+    if tag_name:
+        qs = qs.filter(tags__name__in=[tag_name])
+
+    qs = qs.select_related("author").prefetch_related("photo_set", "tags")
 
     return render(request, "photolog/index.html", {"note_list": qs})
 

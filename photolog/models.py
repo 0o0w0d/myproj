@@ -1,9 +1,12 @@
 from io import BytesIO
+import re
 from os.path import splitext
 from typing import List
 from uuid import uuid4
-from django_lifecycle import LifecycleModelMixin, hook, BEFORE_SAVE
+from django_lifecycle import LifecycleModelMixin, hook, BEFORE_SAVE, AFTER_SAVE
 from PIL import Image
+from taggit.managers import TaggableManager
+
 from django.core.files import File
 from django.core.files.base import ContentFile
 
@@ -15,12 +18,18 @@ from django.urls import reverse_lazy
 from accounts.models import User
 
 
-class Note(models.Model):
+class Note(LifecycleModelMixin, models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    tags = TaggableManager()
+
+    @hook(AFTER_SAVE, when="content", has_changed=True)
+    def on_content_saved(self):
+        hashtags: List[str] = re.findall(r"#(\w+)", self.content)
+        self.tags.set(hashtags, clear=True)
 
     class Meta:
         ordering = ["-pk"]

@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "template_partials",
     "django_htmx",
+    "taggit",
     # local apps
     "core",
     "accounts",
@@ -183,6 +184,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
 
 INTERNAL_IPS = env.list("INTERNAL_IPS", default=["127.0.0.1"])
+
+
+# django-taggit
+
+TAGGIT_CASE_INSENSITIVE = env.bool("TAGGIT_CASE_INSENSITIVE", default=True)
 
 
 # django-crispy-forms
