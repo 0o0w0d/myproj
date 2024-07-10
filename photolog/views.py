@@ -51,6 +51,13 @@ class NoteCreateView(LoginRequiredMixin, CreateView):
 class NoteDetailView(DetailView):
     model = Note
 
+    # N+1 문제 발생 : template단에서는 select_related, prefetch_related를 사용할 수 없기 때문에 view로 로직 이동
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        note = self.object
+        context["comment_list"] = note.comment_set.select_related("author__profile")
+        return context
+
 
 # TODO: photos에 대한 처리를 위해 Formset 이용 => CBV보다 FBV가 구현 용이
 class NoteUpdateView(LoginRequiredMixin, UpdateView):
@@ -156,4 +163,5 @@ class CommentListView(ListView):
         qs = super().get_queryset()
         note_pk = self.kwargs["note_pk"]
         qs = qs.filter(note__pk=note_pk)
+        qs = qs.select_related("author__profile")
         return qs
