@@ -146,3 +146,14 @@ class CommentCreateView(CreateView):
         response = trigger_client_event(response, "refresh-comment-list")
 
         return response
+
+
+class CommentListView(ListView):
+    model = Comment
+    template_name = "photolog/_comment_list.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        note_pk = self.kwargs["note_pk"]
+        qs = qs.filter(note__pk=note_pk)
+        return qs
