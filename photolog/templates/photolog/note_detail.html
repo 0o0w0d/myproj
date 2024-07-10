@@ -32,7 +32,6 @@
           </div>
           <div class="col-md-6">
             {% component 'carousel' photo_list=note.photo_set.all attr_name="image.url" %}{% endcomponent %}
-
           </div>
       </div>
   </div>
@@ -44,4 +43,11 @@
   <a href="{% url 'photolog:note_edit' note.pk %}" class="btn btn-success">Edit</a>
   {% endif %}
 </div>
+<a class="btn btn-primary w-100" 
+    {% comment %} href="{% url 'photolog:comment_new' note.pk %}" {% endcomment %}
+    hx-get="{% url 'photolog:comment_new' note.pk %}"
+    hx-with-timestamp
+    hx-target="body"
+    hx-swap="beforeend" {# body 끝에 추가 #}
+    >add comment</a>
 {% endblock photolog-content %}

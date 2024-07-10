@@ -1,0 +1,28 @@
+{% load component_tags crispy_forms_tags partials %}
+
+{% partialdef form %}
+  {% crispy form %}
+{% endpartialdef %}
+
+{% if request.method == "POST" %}
+  {% partial form %}
+{% else %}
+  {% component 'modal-form' %}
+    {% fill 'modal-title' %}
+      {% if not form.instance.pk %}new comment{% else %}comment edit{% endif %}
+    {% endfill %}
+    {% fill 'modal-body' %}
+      {% partial form %}
+    {% endfill %}
+  {% endcomponent %}
+  <script>
+    (function(){
+      const modalEl = document.currentScript.previousElementSibling;
+      
+      // refresh-comment-list 이벤트를 받으면, modal 숨김
+      document.body.addEventListener('refresh-comment-list', () => {
+        htmx.trigger(modalEl, "hide")
+      });
+    })();
+  </script>
+{% endif %}

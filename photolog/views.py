@@ -1,13 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms import BaseModelForm
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView, DetailView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django_htmx.http import trigger_client_event
 
-
-from .models import Note, Photo
-from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm
+from .models import Note, Photo, Comment
+from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm, CommentForm
 
 
 def index(request):
@@ -107,3 +109,32 @@ def note_edit(request, pk):
             "form_submit_label": "Save",
         },
     )
+
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = "photolog/_comment_form.html"
+
+    # form에 request 값 전달을 위해 get_form_kwargs 메서드 재정의
+    def get_form_kwargs(self) -> dict:
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
+    # 유효성 검사가 끝나고 나서 호출
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        comment = form.save(commit=False)
+        comment.author = self.request.user
+        note_pk = self.kwargs["note_pk"]
+        comment.note = get_object_or_404(Note, pk=note_pk)
+        comment.save()
+
+        messages.success(self.request, f"note #{note_pk} comment saved :)")
+
+        response = render(self.request, "_messages_as_event.html")
+
+        # "refresh-comment-list" 이벤트를 전달
+        response = trigger_client_event(response, "refresh-comment-list")
+
+        return response

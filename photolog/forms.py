@@ -9,7 +9,7 @@ from django.core.files.base import ContentFile
 from django.forms import inlineformset_factory
 from PIL import Image
 
-from .models import Note, Photo
+from .models import Note, Photo, Comment
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -88,3 +88,23 @@ PhotoUpdateFormSet = inlineformset_factory(
 # formset에서 form 태그 제거
 PhotoUpdateFormSet.helper = FormHelper()
 PhotoUpdateFormSet.helper.form_tag = False
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["message"]
+
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.attrs = {
+            "novalidate": True,
+            "autocomplete": "off",
+            "hx-post": request.get_full_path(),
+            "hx-trigger": "submit once",
+            "hx-swap": "outerHTML",
+        }
+        self.helper.layout = Layout("message")
+        self.helper.label_class = "d-none"
