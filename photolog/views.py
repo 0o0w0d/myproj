@@ -119,6 +119,11 @@ class CommentCreateView(CreateView):
     form_class = CommentForm
     template_name = "photolog/_comment_form.html"
 
+    # 에러 상황 발생 테스트를 위해 dispatch 메서드 사용
+    # def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    #     1 / 0
+    #     return super().dispatch(request, *args, **kwargs)
+
     # form에 request 값 전달을 위해 get_form_kwargs 메서드 재정의
     def get_form_kwargs(self) -> dict:
         kwargs = super().get_form_kwargs()

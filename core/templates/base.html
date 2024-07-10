@@ -78,6 +78,18 @@
   <script src="{% static "toast-messages.js" %}"></script>
   {% include "_messages_as_event.html" %}
   <!-- script end -->
+
+  <script>
+    // htmx는 200 이상 400 미만 상태코드 응답만 처리하고
+    // 그 외에는 htmx:responseError 발생 => 응답 에러 이벤트를 따로 처리하는 로직 필요
+    document.body.addEventListener("htmx:responseError", event => {
+      console.error("HTMX 요청 에러:", event.detail);
+      const message = event.detail.error;
+      const tag = "error"
+      htmx.trigger(document.body, "toast-message", { message, tag });
+    });
+
+  </script>
   
   {% block script %}{% endblock script %}
 </body>
