@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "myproj"
+version = "0.1.0"
+description = ""
+authors = ["zion <0o0w0d@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.0.7"
+django-extensions = "^3.2.3"
+django-environ = "^0.11.2"
+django-template-partials = "^24.2"
+django-htmx = "^1.18.0"
+django-crispy-forms = "^2.2"
+django-components = "^0.84"
+crispy-bootstrap5 = "^2024.2"
+pillow = "^10.4.0"
+django-lifecycle = "^1.2.4"
+django-taggit = "^5.0.1"
+
+
+[tool.poetry.group.dev.dependencies]
+django-debug-toolbar = "^4.4.5"
+ipython = "^8.26.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
