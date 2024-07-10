@@ -7,6 +7,8 @@ from django.views.generic import CreateView, DetailView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django_htmx.http import trigger_client_event
+from core.decorators import login_required_hx
+from django.utils.decorators import method_decorator
 
 from .models import Note, Photo, Comment
 from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm, CommentForm
@@ -111,7 +113,8 @@ def note_edit(request, pk):
     )
 
 
-class CommentCreateView(LoginRequiredMixin, CreateView):
+@method_decorator(login_required_hx, name="dispatch")
+class CommentCreateView(CreateView):
     model = Comment
     form_class = CommentForm
     template_name = "photolog/_comment_form.html"
