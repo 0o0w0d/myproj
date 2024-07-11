@@ -4,7 +4,13 @@ from django.db.models.query import QuerySet
 from django.forms import BaseModelForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import CreateView, DetailView, UpdateView, ListView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    UpdateView,
+    ListView,
+    DeleteView,
+)
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django_htmx.http import trigger_client_event
@@ -190,6 +196,26 @@ class CommentUpdateView(UpdateView):
         form.save()
 
         messages.success(self.request, f"note #{note_pk} comment saved :)")
+        response = render(self.request, "_messages_as_event.html")
+        response = trigger_client_event(response, "refresh-comment-list")
+
+        return response
+
+
+@method_decorator(login_required_hx, name="dispatch")
+class CommentDeleteView(DeleteView):
+    model = Comment
+
+    def get_queryset(self) -> QuerySet:
+        qs = super().get_queryset()
+        note_pk = self.kwargs["note_pk"]
+        qs = qs.filter(note__pk=note_pk, author=self.request.user)
+        return qs
+
+    def form_valid(self, form):
+        self.object.delete()
+
+        messages.success(self.request, f"comment deleted :(")
         response = render(self.request, "_messages_as_event.html")
         response = trigger_client_event(response, "refresh-comment-list")
 
