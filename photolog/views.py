@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models.query import QuerySet
 from django.forms import BaseModelForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -165,3 +166,31 @@ class CommentListView(ListView):
         qs = qs.filter(note__pk=note_pk)
         qs = qs.select_related("author__profile")
         return qs
+
+
+@method_decorator(login_required_hx, name="dispatch")
+class CommentUpdateView(UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = "photolog/_comment_form.html"
+
+    def get_form_kwargs(self) -> dict:
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
+    def get_queryset(self) -> QuerySet:
+        qs = super().get_queryset()
+        qs = qs.filter(author=self.request.user)
+        return qs
+
+    # 유효성 검사가 끝나고 나서 호출
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        note_pk = self.kwargs["note_pk"]
+        form.save()
+
+        messages.success(self.request, f"note #{note_pk} comment saved :)")
+        response = render(self.request, "_messages_as_event.html")
+        response = trigger_client_event(response, "refresh-comment-list")
+
+        return response
