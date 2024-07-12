@@ -13,6 +13,7 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django_htmx.http import trigger_client_event, HttpResponseClientRedirect
 from core.decorators import login_required_hx
 from django.utils.decorators import method_decorator
@@ -23,11 +24,19 @@ from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm, CommentFo
 
 
 def index(request):
-    qs = Note.objects.all()
-
     tag_name = request.GET.get("tag", "").strip()
     if tag_name:
-        qs = qs.filter(tags__name__in=[tag_name])
+        qs = Note.objects.filter(tags__name__in=[tag_name])
+
+    else:
+        if not request.user.is_authenticated:
+            qs = Note.objects.all()
+
+        else:
+            user = request.user
+            qs = Note.objects.filter(
+                Q(author__in=user.following_set.all()) | Q(author=user)
+            )
 
     qs = qs.select_related("author").prefetch_related("photo_set", "tags")
 
