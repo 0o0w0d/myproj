@@ -93,6 +93,28 @@ def user_follow(request, username: str):
     )
 
 
+def following_list(request):
+    user = request.user
+    qs = user.following_set.exclude(pk__in=[user.pk]).select_related("profile")
+
+    return render(
+        request, "photolog/user_list.html", {"user_list": qs, "is_follower": True}
+    )
+
+
+def discover_list(request):
+    user = request.user
+    qs = (
+        User.objects.exclude(pk__in=user.following_set.all())
+        .exclude(pk__in=[user.pk])
+        .select_related("profile")
+    )
+
+    return render(
+        request, "photolog/user_list.html", {"user_list": qs, "is_follower": False}
+    )
+
+
 # class UserNoteListView(ListView):
 #     model = Note
 #     template_name = "photolog/user_page.html"

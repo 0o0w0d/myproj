@@ -19,9 +19,12 @@
   <nav class="py-2 bg-body-tertiary border-bottom">
     <div class="container d-flex flex-wrap">
       <ul class="nav me-auto">
-        <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2 active" aria-current="page">Home</a></li>
+        <li class="nav-item"><a href="{% url 'photolog:index' %}" class="nav-link link-body-emphasis px-2 active" aria-current="page">Home</a></li>
         <li class="nav-item"><a href="{% url 'photolog:index' %}" class="nav-link link-body-emphasis px-2">Timeline</a></li>
         <li class="nav-item"><a href="{% url 'photolog:note_new' %}" class="nav-link link-body-emphasis px-2">New Note</a></li>
+        <li class="nav-item"><a href="{% url 'photolog:following_list' %}" class="nav-link link-body-emphasis px-2">Following</a></li>
+        <li class="nav-item"><a href="{% url 'photolog:discover_list' %}" class="nav-link link-body-emphasis px-2">Discover</a></li>
+      
       </ul>
       <ul class="nav">
         {% if not user.is_authenticated %}
