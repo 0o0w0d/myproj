@@ -18,6 +18,7 @@ from core.decorators import login_required_hx
 from django.utils.decorators import method_decorator
 
 from .models import Note, Photo, Comment
+from accounts.models import User
 from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm, CommentForm
 
 
@@ -31,6 +32,35 @@ def index(request):
     qs = qs.select_related("author").prefetch_related("photo_set", "tags")
 
     return render(request, "photolog/index.html", {"note_list": qs})
+
+
+def user_page(request, username):
+    author = get_object_or_404(User, is_active=True, username=username)
+
+    qs = Note.objects.filter(author=author)
+    qs = qs.select_related("author").prefetch_related("photo_set", "tags")
+
+    return render(
+        request, "photolog/user_page.html", {"note_list": qs, "author": author}
+    )
+
+
+# class UserNoteListView(ListView):
+#     model = Note
+#     template_name = "photolog/user_page.html"
+
+#     def get_queryset(self) -> QuerySet:
+#         qs = super().get_queryset()
+#         username = self.kwargs["username"]
+#         qs = qs.filter(
+#             author__username=username, author__is_active=True
+#         ).prefetch_related("photo_set", "tags")
+#         return qs
+
+#     def get_context_data(self, **kwargs) -> dict:
+#         kwargs = super().get_context_data(**kwargs)
+#         kwargs["username"] = self.kwargs["username"]
+#         return kwargs
 
 
 class NoteCreateView(LoginRequiredMixin, CreateView):
