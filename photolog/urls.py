@@ -7,6 +7,7 @@ app_name = "photolog"
 urlpatterns = [
     path("", views.index, name="index"),
     path("@<str:username>/", views.user_page, name="user_page"),
+    path("@<str:username>/follow/", views.user_follow, name="user_follow"),
     path("new/", views.NoteCreateView.as_view(), name="note_new"),
     path("<int:pk>/", views.NoteDetailView.as_view(), name="note_detail"),
     path("<int:pk>/edit/", views.note_edit, name="note_edit"),

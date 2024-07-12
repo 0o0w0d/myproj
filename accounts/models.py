@@ -13,10 +13,10 @@ class User(AbstractUser):
         return self.following_set.filter(pk=to_user.pk).exists()
 
     def follow(self, to_user) -> None:
-        return self.following_set.add(to_user)
-
-    def unfollowing(self, to_user) -> None:
-        return self.following_set.remove(to_user)
+        if self.is_follower(to_user):
+            return self.following_set.remove(to_user)
+        else:
+            return self.following_set.add(to_user)
 
     # 유저가 팔로우하고 있는 사람
     def follower_count(self) -> int:

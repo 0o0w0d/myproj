@@ -13,7 +13,7 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
-from django_htmx.http import trigger_client_event
+from django_htmx.http import trigger_client_event, HttpResponseClientRedirect
 from core.decorators import login_required_hx
 from django.utils.decorators import method_decorator
 
@@ -42,6 +42,41 @@ def user_page(request, username):
 
     return render(
         request, "photolog/user_page.html", {"note_list": qs, "author": author}
+    )
+
+
+def user_follow(request, username: str):
+    from_user = request.user
+    to_user = get_object_or_404(User, username=username, is_active=True)
+
+    # 1. method GET or POST
+    # 2. user.is_authenticated
+    # 3. is_follower
+
+    # GET일 경우에는 단순 팔로잉 버튼 렌더링
+    if request.method == "GET":
+        if from_user.is_authenticated:
+            is_follower = from_user.is_follower(to_user)
+        else:
+            is_follower = False
+    else:
+        if from_user.is_authenticated:
+            # 이미 팔로우 되있는 지 확인 여부에 따라 다른 로직 수행
+            is_follower = from_user.is_follower(to_user)
+
+            from_user.follow(to_user)
+            print("전", is_follower)
+            is_follower = not is_follower
+            print("후", is_follower)
+        else:
+            current_uri = request.META.get("HTTP_HX_CURRENT_URL")
+            redirect_uri = reverse_lazy("accounts:login") + f"?next={current_uri}"
+            return HttpResponseClientRedirect(redirect_uri)
+
+    return render(
+        request,
+        "photolog/_user_follower.html",
+        {"is_follower": is_follower, "username": username},
     )
 
 
