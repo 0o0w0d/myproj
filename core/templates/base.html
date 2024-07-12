@@ -22,8 +22,6 @@
         <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2 active" aria-current="page">Home</a></li>
         <li class="nav-item"><a href="{% url 'photolog:index' %}" class="nav-link link-body-emphasis px-2">Timeline</a></li>
         <li class="nav-item"><a href="{% url 'photolog:note_new' %}" class="nav-link link-body-emphasis px-2">New Note</a></li>
-        <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">FAQs</a></li>
-        <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">About</a></li>
       </ul>
       <ul class="nav">
         {% if not user.is_authenticated %}
@@ -42,8 +40,8 @@
       <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto link-body-emphasis text-decoration-none">
         <span class="fs-4">Proj</span>
       </a>
-      <form class="col-12 col-lg-auto mb-3 mb-lg-0" role="search">
-        <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
+      <form class="col-12 col-lg-auto mb-3 mb-lg-0" role="search" action="{% url 'photolog:index' %}">
+        <input name="query" value="{{ query }}" type="search" class="form-control" placeholder="Search..." aria-label="Search">
       </form>
     </div>
   </header>

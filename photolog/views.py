@@ -25,8 +25,12 @@ from .forms import NoteCreateForm, PhotoUpdateFormSet, NoteUpdateForm, CommentFo
 
 def index(request):
     tag_name = request.GET.get("tag", "").strip()
+    query = request.GET.get("query", "").strip()
     if tag_name:
         qs = Note.objects.filter(tags__name__in=[tag_name])
+
+    elif query:
+        qs = Note.objects.filter(Q(title__icontains=query) | Q(author__username=query))
 
     else:
         if not request.user.is_authenticated:
@@ -40,7 +44,7 @@ def index(request):
 
     qs = qs.select_related("author").prefetch_related("photo_set", "tags")
 
-    return render(request, "photolog/index.html", {"note_list": qs})
+    return render(request, "photolog/index.html", {"note_list": qs, "query": query})
 
 
 def user_page(request, username):
