@@ -24,6 +24,12 @@ django-taggit = "^5.0.1"
 django-debug-toolbar = "^4.4.5"
 ipython = "^8.26.0"
 
+
+[tool.poetry.group.prob.dependencies]
+psycopg2-binary = "^2.9.9"
+gunicorn = "^22.0.0"
+uvicorn = {extras = ["standard"], version = "^0.30.1"}
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
