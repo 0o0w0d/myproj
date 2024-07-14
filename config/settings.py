@@ -23,7 +23,6 @@ env = Env()
 
 ENV_PATH = Path(env.str("ENV_PATH", default=str(BASE_DIR / ".env")))
 
-ENV_PATH = BASE_DIR / ".env"
 if ENV_PATH.exists():
     with ENV_PATH.open(encoding="utf-8") as f:
         env.read_env(f, overwrite=True)
@@ -119,10 +118,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DEFAULT_DATABASE_URL = f"splite:///{BASE_DIR / 'db.sqlite3'}"
+DEFAULT_DATABASE_URL = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 
 
-DATABASES = {"default": env.db(default=DEFAULT_DATABASE_URL)}
+DATABASES = {
+    "default": env.db(default=DEFAULT_DATABASE_URL),
+}
 
 # Custom User model
 AUTH_USER_MODEL = "accounts.User"
