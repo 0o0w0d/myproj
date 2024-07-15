@@ -13,7 +13,8 @@ class PostSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.ModelSerializer):
     # Model에서 __str__ 속성으로 지정된 값 반환
     # AbstractUser default config : __str__ -> 'username'
-    author = serializers.StringRelatedField()
+    # author = serializers.StringRelatedField()
+    author = serializers.CharField(source="author.username")
 
     class Meta:
         model = Post
@@ -21,7 +22,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
+    author = serializers.CharField(source="author.username")
 
     class Meta:
         model = Post
