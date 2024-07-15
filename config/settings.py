@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "core",
     "accounts",
     "photolog",
+    "blog",
 ]
 
 if DEBUG:
