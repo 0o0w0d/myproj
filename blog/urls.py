@@ -1,7 +1,12 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+from . import api
 
 
 app_name = "blog"
 
 urlpatterns = []
+
+urlpatterns_api_v1 = [path("", api.post_list, name="post_list")]
+
+urlpatterns += [path("api/", include((urlpatterns_api_v1, "api-v1")))]
