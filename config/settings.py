@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "template_partials",
     "django_htmx",
+    "rest_framework",
     "taggit",
     # local apps
     "core",
@@ -225,3 +226,13 @@ else:
     except ImproperlyConfigured as e:
         print("ERROR:", e, file=sys.stderr)
         EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+# django-rest-framework
+# https://www.django-rest-framework.org
+
+# REST_FRAMEWORK = {
+#     # Use Django's standard `django.contrib.auth` permissions,
+#     # or allow read-only access for unauthenticated users.
+#     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"]
+# }

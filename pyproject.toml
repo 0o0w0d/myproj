@@ -18,6 +18,7 @@ crispy-bootstrap5 = "^2024.2"
 pillow = "^10.4.0"
 django-lifecycle = "^1.2.4"
 django-taggit = "^5.0.1"
+djangorestframework = "^3.15.2"
 
 
 [tool.poetry.group.dev.dependencies]
