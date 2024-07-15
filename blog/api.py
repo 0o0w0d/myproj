@@ -8,7 +8,8 @@ from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
 
 def post_list(request: HttpRequest) -> HttpResponse:
     # 모든 Post 객체를 가져오지만 content 필드는 지연 로드
-    post_qs = Post.objects.all().defer("content")
+    # N + 1 문제 해결을 위해 author 필드에 대한 즉시 로딩 수행
+    post_qs = Post.objects.all().defer("content").select_related("author")
 
     # list일 때 many 인자를 지정하지 않으면 모델 instance로 인식해 error
     serializer = PostListSerializer(instance=post_qs, many=True)
