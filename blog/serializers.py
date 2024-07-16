@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post
+from .models import Post, Comment
 from accounts.models import User
 
 # serializers -> forms과 유사
@@ -15,6 +15,12 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", "name"]
+
+
+class CommentSerializier(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["id", "message"]
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -36,7 +42,9 @@ class PostListSerializer(serializers.ModelSerializer):
 
 class PostDetailSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
-    comment_list = serializers.StringRelatedField(source="comment_set", many=True)
+    # comment_list = serializers.StringRelatedField(source="comment_set", many=True)
+    # 역참조 관계이기 때문에 source 속성 지정 필수 (Post 인스턴스에 comment 값이 없고, author 값은 있음)
+    comment_list = CommentSerializier(source="comment_set", many=True)
 
     class Meta:
         model = Post
