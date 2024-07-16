@@ -12,6 +12,7 @@ from rest_framework.generics import (
     RetrieveAPIView,
     CreateAPIView,
     UpdateAPIView,
+    DestroyAPIView,
 )
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import IsAuthenticated
@@ -94,3 +95,13 @@ class PostUpdateAPIView(UpdateAPIView):
 
 
 post_edit = PostUpdateAPIView.as_view()
+
+
+class PostDeleteAPIView(DestroyAPIView):
+    # 레코드 조회를 위해 쿼리셋 지정 필요
+    # 삭제에는 serializer 필요 X
+    queryset = Post.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+post_delete = PostDeleteAPIView.as_view()

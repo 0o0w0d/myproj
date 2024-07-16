@@ -62,3 +62,9 @@ Authorization: Basic cyang cyang
 Content-Type: application/x-www-form-urlencoded
 
 title=샘플+제목+수정2
+
+
+### 삭제 요청
+
+DELETE {{BASE_URL}}/blog/api/101/delete/
+Authorization: Basic cyang cyang
