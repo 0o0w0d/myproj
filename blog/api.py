@@ -10,6 +10,8 @@ from rest_framework.request import Request
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 
+from core.mixins import JSONResponseWrapperMixin
+
 # api.py ~= views.py
 
 # api_view 사용 시 rest_framework의 Response, Resquest를 사용
@@ -30,23 +32,20 @@ from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRen
 
 
 # django generic class 기반으로 변경
-class PostListAPIView(ListAPIView):
+class PostListAPIView(JSONResponseWrapperMixin, ListAPIView):
     queryset = PostListSerializer.get_optimized_queryset()
     serializer_class = PostListSerializer
 
-    # 응답 데이터 후처리를 위해 list 메서드 재정의
-    def list(self, request: Request, *args, **kwargs):
-        response: Response = super().list(request, *args, **kwargs)
+    # 반복되는 내용을 사용해 mixin class 정의 (core.mixins)
+    # def finalize_response(self, request, response, *args, **kwargs):
+    #     if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
+    #         # response.data  # 원본 응답 데이터 : ReturnList
+    #         response.data = ReturnDict(
+    #             {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
+    #             serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
+    #         )
 
-        # json 응답일 경우에만 후처리를 위해 JSONRenderer나 BrowsableAPIRenderer를 사용하는지 확인
-        if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
-            # response.data  # 원본 응답 데이터 : ReturnList
-            response.data = ReturnDict(
-                {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
-                serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
-            )
-
-        return response
+    #     return super().finalize_response(request, response, *args, **kwargs)
 
 
 post_list = PostListAPIView.as_view()
@@ -62,18 +61,9 @@ post_list = PostListAPIView.as_view()
 #     return Response(detail_data)
 
 
-class PostRetrieveAPIView(RetrieveAPIView):
+class PostRetrieveAPIView(JSONResponseWrapperMixin, RetrieveAPIView):
     queryset = PostDetailSerializer.get_optimized_queryset()
     serializer_class = PostDetailSerializer
-
-    # 응답 데이터 후처리를 위해 retrieve 메서드 재정의
-    def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
-        response.data = ReturnDict(
-            {"ok": True, "result": response.data},
-            serializer=response.data.serializer,
-        )
-        return response
 
 
 post_detail = PostRetrieveAPIView.as_view()
