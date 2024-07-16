@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 
 # api.py ~= views.py
 
@@ -33,6 +34,20 @@ class PostListAPIView(ListAPIView):
     queryset = PostListSerializer.get_optimized_queryset()
     serializer_class = PostListSerializer
 
+    # 응답 데이터 후처리를 위해 list 메서드 재정의
+    def list(self, request: Request, *args, **kwargs):
+        response: Response = super().list(request, *args, **kwargs)
+
+        # json 응답일 경우에만 후처리를 위해 JSONRenderer나 BrowsableAPIRenderer를 사용하는지 확인
+        if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
+            # response.data  # 원본 응답 데이터 : ReturnList
+            response.data = ReturnDict(
+                {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
+                serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
+            )
+
+        return response
+
 
 post_list = PostListAPIView.as_view()
 
@@ -50,6 +65,15 @@ post_list = PostListAPIView.as_view()
 class PostRetrieveAPIView(RetrieveAPIView):
     queryset = PostDetailSerializer.get_optimized_queryset()
     serializer_class = PostDetailSerializer
+
+    # 응답 데이터 후처리를 위해 retrieve 메서드 재정의
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        response.data = ReturnDict(
+            {"ok": True, "result": response.data},
+            serializer=response.data.serializer,
+        )
+        return response
 
 
 post_detail = PostRetrieveAPIView.as_view()
