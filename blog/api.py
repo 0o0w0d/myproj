@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
 
+# api.py ~= views.py
+
 
 def post_list(request: HttpRequest) -> HttpResponse:
     # 모든 Post 객체를 가져오지만 content 필드는 지연 로드
