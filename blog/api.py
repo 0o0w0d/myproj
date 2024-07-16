@@ -7,8 +7,14 @@ from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveAPIView,
+    CreateAPIView,
+    UpdateAPIView,
+)
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
+from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import JSONResponseWrapperMixin
 
@@ -67,3 +73,14 @@ class PostRetrieveAPIView(JSONResponseWrapperMixin, RetrieveAPIView):
 
 
 post_detail = PostRetrieveAPIView.as_view()
+
+
+class PostCreateAPIView(CreateAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+post_new = PostCreateAPIView.as_view()
