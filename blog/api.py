@@ -79,8 +79,18 @@ class PostCreateAPIView(CreateAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
+    # 전달받은 내용이 아닌, 추가 내용 전달을 위해서 perform_create 메서드 재정의
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
 
 post_new = PostCreateAPIView.as_view()
+
+
+class PostUpdateAPIView(UpdateAPIView):
+    queryset = PostSerializer.get_optimized_queryset()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+
+post_edit = PostUpdateAPIView.as_view()

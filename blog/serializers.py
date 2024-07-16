@@ -29,6 +29,10 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ["id", "title", "content"]
 
+    @staticmethod
+    def get_optimized_queryset() -> QuerySet[Post]:
+        return Post.objects.all()
+
 
 class PostListSerializer(serializers.ModelSerializer):
     # Model에서 __str__ 속성으로 지정된 값 반환
