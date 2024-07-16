@@ -232,8 +232,17 @@ else:
 # django-rest-framework
 # https://www.django-rest-framework.org
 
-# REST_FRAMEWORK = {
-#     # Use Django's standard `django.contrib.auth` permissions,
-#     # or allow read-only access for unauthenticated users.
-#     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"]
-# }
+REST_FRAMEWORK = {
+    #     # Use Django's standard `django.contrib.auth` permissions,
+    #     # or allow read-only access for unauthenticated users.
+    #     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    # renderer 설정 (default: json+browser, pandasxlsx+wordcloud)
+    # renderer 설정 시, 각각 api마다 설정 가능
+    # (FBV -> rest_framework.decorators.renderer_classes / CBV -> renderer_classes 속성 클래스 내부 구현)
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+        "core.renderers.PandasXlsxRenderer",
+        "core.renderers.WordcloudRenderer",
+    ],
+}
