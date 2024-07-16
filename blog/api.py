@@ -30,7 +30,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 # django generic class 기반으로 변경
 class PostListAPIView(ListAPIView):
-    queryset = Post.objects.all().defer("content").select_related("author")
+    queryset = PostListSerializer.get_optimized_queryset()
     serializer_class = PostListSerializer
 
 
@@ -48,7 +48,7 @@ post_list = PostListAPIView.as_view()
 
 
 class PostRetrieveAPIView(RetrieveAPIView):
-    queryset = Post.objects.all()
+    queryset = PostDetailSerializer.get_optimized_queryset()
     serializer_class = PostDetailSerializer
 
 
