@@ -18,6 +18,7 @@ from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRen
 from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import JSONResponseWrapperMixin
+from core.permissions import IsAuthorOrReadonly
 
 # api.py ~= views.py
 
@@ -91,7 +92,7 @@ post_new = PostCreateAPIView.as_view()
 class PostUpdateAPIView(UpdateAPIView):
     queryset = PostSerializer.get_optimized_queryset()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthorOrReadonly]
 
 
 post_edit = PostUpdateAPIView.as_view()
@@ -101,7 +102,7 @@ class PostDeleteAPIView(DestroyAPIView):
     # 레코드 조회를 위해 쿼리셋 지정 필요
     # 삭제에는 serializer 필요 X
     queryset = Post.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthorOrReadonly]
 
 
 post_delete = PostDeleteAPIView.as_view()

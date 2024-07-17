@@ -6,7 +6,7 @@
 ### 실패하는 form-urlencoded 요청
 
 POST {{BASE_URL}}/blog/api/new/
-Authorization: Basic cyang cyang
+Authorization: Basic jiweoni jiweoni
 Content-Type: application/x-www-form-urlencoded
 
 title=샘플+제목&content=
@@ -15,7 +15,7 @@ title=샘플+제목&content=
 ### 성공하는 form-urlencoded 요청
 
 POST {{BASE_URL}}/blog/api/new/
-Authorization: Basic cyang cyang
+Authorization: Basic jiweoni jiweoni
 Content-Type: application/x-www-form-urlencoded
 
 title=샘플+제목&content=샘플+내용
@@ -24,7 +24,7 @@ title=샘플+제목&content=샘플+내용
 ### 실패하는 json 요청
 
 POST {{BASE_URL}}/blog/api/new/
-Authorization: Basic cyang cyang
+Authorization: Basic jiweoni jiweoni
 Content-Type: application/json
 
 {
@@ -36,7 +36,7 @@ Content-Type: application/json
 ### 성공하는 json 요청
 
 POST {{BASE_URL}}/blog/api/new/
-Authorization: Basic cyang cyang
+Authorization: Basic jiweoni jiweoni
 Content-Type: application/json
 
 {
@@ -49,7 +49,7 @@ Content-Type: application/json
 ### (수정/PUT) 성공하는 form-urlencoded (모든 필드 지정)
 
 PUT {{BASE_URL}}/blog/api/101/edit/
-Authorization: Basic cyang cyang
+Authorization: Basic jiweoni jiweoni
 Content-Type: application/x-www-form-urlencoded
 
 title=샘플+제목+수정&content=샘플+내용
@@ -58,7 +58,7 @@ title=샘플+제목+수정&content=샘플+내용
 ### (수정/PATCH) 성공하는 form-urlencoded (업데이트할 필드만 지정)
 
 PATCH {{BASE_URL}}/blog/api/101/edit/
-Authorization: Basic cyang cyang
+Authorization: Basic jiweoni jiweoni
 Content-Type: application/x-www-form-urlencoded
 
 title=샘플+제목+수정2
@@ -67,4 +67,4 @@ title=샘플+제목+수정2
 ### 삭제 요청
 
 DELETE {{BASE_URL}}/blog/api/101/delete/
-Authorization: Basic cyang cyang
+Authorization: Basic to to
