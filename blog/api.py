@@ -1,4 +1,6 @@
+from django.db.models import Model
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from rest_framework.views import APIView
 from .models import Post
 from .serializers import PostSerializer, PostListSerializer, PostDetailSerializer
 from django.shortcuts import get_object_or_404
@@ -15,9 +17,13 @@ from rest_framework.generics import (
     DestroyAPIView,
 )
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 
-from core.mixins import JSONResponseWrapperMixin, PermissionDebugMixin
+from core.mixins import (
+    JSONResponseWrapperMixin,
+    PermissionDebugMixin,
+    TestFuncPermissionMixin,
+)
 from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
 
 # api.py ~= views.py
@@ -91,20 +97,36 @@ class PostCreateAPIView(PermissionDebugMixin, CreateAPIView):
 post_new = PostCreateAPIView.as_view()
 
 
-class PostUpdateAPIView(PermissionDebugMixin, UpdateAPIView):
+class PostUpdateAPIView(PermissionDebugMixin, TestFuncPermissionMixin, UpdateAPIView):
     queryset = PostSerializer.get_optimized_queryset()
     serializer_class = PostSerializer
     # permission_classes = [IsAuthorOrReadonly]
-    permission_classes = [
-        make_drf_permission_class(
-            class_name="PostUpdateAPIView",
-            permit_safe_methods=True,
-            has_permission_test_func=lambda request, view: request.user.is_authenticated,
-            has_object_permission_test_func=(
-                lambda request, view, obj: obj.author == request.user
-            ),
-        ),
-    ]
+    # permission_classes = [
+    #     make_drf_permission_class(
+    #         class_name="PostUpdateAPIView",
+    #         permit_safe_methods=True,
+    #         has_permission_test_func=lambda request, view: request.user.is_authenticated,
+    #         has_object_permission_test_func=(
+    #             lambda request, view, obj: obj.author == request.user
+    #         ),
+    #     ),
+    # ]
+
+    # TestFuncPermissionMixin에서 상속받아
+    # APIView에서 has_permission와 has_object_permission 메서드를 직접 재정의 가능
+    TEST_FUNC_PERMISSION_CLASS_NAME = "PostUpdateAPIView"
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_authenticated
+
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Model
+    ) -> bool:
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user == obj.author
 
 
 post_edit = PostUpdateAPIView.as_view()
