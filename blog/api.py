@@ -17,7 +17,7 @@ from rest_framework.generics import (
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import IsAuthenticated
 
-from core.mixins import JSONResponseWrapperMixin
+from core.mixins import JSONResponseWrapperMixin, PermissionDebugMixin
 from core.permissions import IsAuthorOrReadonly
 
 # api.py ~= views.py
@@ -40,7 +40,7 @@ from core.permissions import IsAuthorOrReadonly
 
 
 # django generic class 기반으로 변경
-class PostListAPIView(JSONResponseWrapperMixin, ListAPIView):
+class PostListAPIView(JSONResponseWrapperMixin, PermissionDebugMixin, ListAPIView):
     queryset = PostListSerializer.get_optimized_queryset()
     serializer_class = PostListSerializer
 
@@ -69,7 +69,9 @@ post_list = PostListAPIView.as_view()
 #     return Response(detail_data)
 
 
-class PostRetrieveAPIView(JSONResponseWrapperMixin, RetrieveAPIView):
+class PostRetrieveAPIView(
+    JSONResponseWrapperMixin, PermissionDebugMixin, RetrieveAPIView
+):
     queryset = PostDetailSerializer.get_optimized_queryset()
     serializer_class = PostDetailSerializer
 
@@ -77,7 +79,7 @@ class PostRetrieveAPIView(JSONResponseWrapperMixin, RetrieveAPIView):
 post_detail = PostRetrieveAPIView.as_view()
 
 
-class PostCreateAPIView(CreateAPIView):
+class PostCreateAPIView(PermissionDebugMixin, CreateAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
@@ -89,7 +91,7 @@ class PostCreateAPIView(CreateAPIView):
 post_new = PostCreateAPIView.as_view()
 
 
-class PostUpdateAPIView(UpdateAPIView):
+class PostUpdateAPIView(PermissionDebugMixin, UpdateAPIView):
     queryset = PostSerializer.get_optimized_queryset()
     serializer_class = PostSerializer
     permission_classes = [IsAuthorOrReadonly]
@@ -98,7 +100,7 @@ class PostUpdateAPIView(UpdateAPIView):
 post_edit = PostUpdateAPIView.as_view()
 
 
-class PostDeleteAPIView(DestroyAPIView):
+class PostDeleteAPIView(PermissionDebugMixin, DestroyAPIView):
     # 레코드 조회를 위해 쿼리셋 지정 필요
     # 삭제에는 serializer 필요 X
     queryset = Post.objects.all()
