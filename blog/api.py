@@ -18,7 +18,7 @@ from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRen
 from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import JSONResponseWrapperMixin, PermissionDebugMixin
-from core.permissions import IsAuthorOrReadonly
+from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
 
 # api.py ~= views.py
 
@@ -94,7 +94,17 @@ post_new = PostCreateAPIView.as_view()
 class PostUpdateAPIView(PermissionDebugMixin, UpdateAPIView):
     queryset = PostSerializer.get_optimized_queryset()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthorOrReadonly]
+    # permission_classes = [IsAuthorOrReadonly]
+    permission_classes = [
+        make_drf_permission_class(
+            class_name="PostUpdateAPIView",
+            permit_safe_methods=True,
+            has_permission_test_func=lambda request, view: request.user.is_authenticated,
+            has_object_permission_test_func=(
+                lambda request, view, obj: obj.author == request.user
+            ),
+        ),
+    ]
 
 
 post_edit = PostUpdateAPIView.as_view()
