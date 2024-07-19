@@ -112,3 +112,17 @@ def test_authenticated_user_can_create_post(api_client_with_new_user_basic_auth,
     assert status.HTTP_201_CREATED == response.status_code
     assert data["title"] == response.data["title"]
     assert data["content"] == response.data["content"]
+
+
+# test 함수 안에서 for 문을 통해 값을 test하게 되면, 어느 부분에서 틀렸는지 알 수 없음(하나의 테스트)
+# parametrize를 사용하면 여러 개의 테스트 생성 => 어느 부분이 틀렸는지 확인 가능
+@pytest.mark.it("필수 필드가 누락된 생성 요청은 거부되어야 합니다.")
+@pytest.mark.django_db
+@pytest.mark.parametrize("title, content", [("", "content"), ("title", ""), ("", "")])
+def test_missing_required_fields_cant_create_post(
+    api_client_with_new_user_basic_auth, title, content
+):
+    url = reverse("blog:api-v1:post_new")
+    data = {"title": title, "content": content}
+    response: Response = api_client_with_new_user_basic_auth.post(url, data=data)
+    assert status.HTTP_400_BAD_REQUEST == response.status_code
