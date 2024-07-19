@@ -22,15 +22,15 @@ def create_user(raw_password: str = None) -> User:
 
 def get_api_client_with_basic_auth(user: User, raw_password: str) -> APIClient:
     """
-    인자의 User 인스턴스와 암호 기반의 Basic 인증을 적용한 APIClient 인스턴스 반환
+    인자의 User 인스턴스와 암호 기반에서 Basic 인증을 적용한 APIClient 인스턴스 반환
     """
 
-    # *.http 파일에서는 자동으로 base64 인코딩 수행
+    # *.http 파일에서는 자동으로 base64 인코딩을 수행해줬었습니다.
     base64_data: bytes = f"{user.username}:{raw_password}".encode()
     authorization_header: str = base64.b64encode(base64_data).decode()
 
     client = APIClient()
-    client.credentials(HTTP_AUTHORIZAION=f"Basic {authorization_header}")
+    client.credentials(HTTP_AUTHORIZATION=f"Basic {authorization_header}")
     return client
 
 
@@ -93,3 +93,22 @@ def test_post_retrieve(unauthenticated_api_client):
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
     assert new_post.title == response.data["result"]["title"]
+
+
+@pytest.mark.it("인증하지 않은 요청은 생성 요청 거부")
+@pytest.mark.django_db
+def test_unauthenticated_user_cant_create_post(unauthenticated_api_client):
+    url = reverse("blog:api-v1:post_new")
+    response: Response = unauthenticated_api_client.post(url, data={})
+    assert status.HTTP_403_FORBIDDEN == response.status_code
+
+
+@pytest.mark.it("인증된 요청은 생성 요청 성공")
+@pytest.mark.django_db
+def test_authenticated_user_can_create_post(api_client_with_new_user_basic_auth, faker):
+    url = reverse("blog:api-v1:post_new")
+    data = {"title": faker.sentence(), "content": faker.paragraph()}
+    response: Response = api_client_with_new_user_basic_auth.post(url, data=data)
+    assert status.HTTP_201_CREATED == response.status_code
+    assert data["title"] == response.data["title"]
+    assert data["content"] == response.data["content"]
