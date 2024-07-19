@@ -126,3 +126,67 @@ def test_missing_required_fields_cant_create_post(
     data = {"title": title, "content": content}
     response: Response = api_client_with_new_user_basic_auth.post(url, data=data)
     assert status.HTTP_400_BAD_REQUEST == response.status_code
+
+
+"""
+수정, 삭제 테스트 idea
+    실패 시나리오
+    - 임의의 Post를 생성하고, 임의의 유저 인증 정보가 담긴 APIClient 이용
+    
+    성공 시나리오
+    - 유저를 생성하고, 그 유저를 작성자로 Post를 하나 생성 -> 그 Post에 대해서 검사 수행
+    - 유저를 따로 생성했으므로, 해당 유저의 인증 정보가 담긴 APIClient 이용(get_api_client_with_basic_auth 함수 사용)
+"""
+
+
+@pytest.mark.it("작성자가 아닌 유저가 수정 요청하면 거부")
+@pytest.mark.django_db
+def test_non_author_cant_update_post(new_post, api_client_with_new_user_basic_auth):
+    url = reverse("blog:api-v1:post_edit", args=[new_post.pk])
+    response: Response = api_client_with_new_user_basic_auth.patch(url, data={})
+    assert status.HTTP_403_FORBIDDEN == response.status_code
+
+
+@pytest.mark.it("작성자가 수정 요청하면 성공")
+@pytest.mark.django_db
+def test_author_can_update_post(faker):
+    raw_password = faker.password()
+    user = create_user(raw_password=raw_password)
+    new_post = PostFactory(author=user)
+
+    url = reverse("blog:api-v1:post_edit", args=[new_post.pk])
+    edit_title = faker.sentence()
+
+    apiclient = get_api_client_with_basic_auth(user=user, raw_password=raw_password)
+    response: Response = apiclient.patch(url, data={"title": edit_title})
+    assert status.HTTP_200_OK == response.status_code
+    assert edit_title == response.data["title"]
+
+
+# 삭제 요청 api를 하나의 클래스로 그룹화 => 테스트 메서드가 인스턴스 메서드로 self 인자를 필요로 함
+@pytest.mark.describe("Post 삭제 API test")
+class TestPostDeleteGroup:
+    @pytest.mark.it("작성자가 아닌 유저가 삭제 요청하면 거부")
+    @pytest.mark.django_db
+    def test_non_author_cant_delete_post(
+        self, new_post, api_client_with_new_user_basic_auth
+    ):
+        url = reverse("blog:api-v1:post_delete", args=[new_post.pk])
+        response: Response = api_client_with_new_user_basic_auth.delete(url)
+        assert status.HTTP_403_FORBIDDEN == response.status_code
+
+    @pytest.mark.it("작성자가 삭제 요청하면 성공")
+    @pytest.mark.django_db
+    def test_author_can_delete_post(self, faker):
+        password = faker.password()
+        user = create_user(raw_password=password)
+        new_post = PostFactory(author=user)
+
+        url = reverse("blog:api-v1:post_delete", args=[new_post.pk])
+        apiclient = get_api_client_with_basic_auth(user, password)
+        response = apiclient.delete(url)
+        assert status.HTTP_204_NO_CONTENT == response.status_code
+
+        # 삭제 요청이 정상적으로 처리되었으면 ObjectDoesNoteExist 예외가 발생해야 함
+        with pytest.raises(ObjectDoesNotExist):
+            Post.objects.get(pk=new_post.pk)
