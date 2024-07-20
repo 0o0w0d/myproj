@@ -245,4 +245,7 @@ REST_FRAMEWORK = {
         "core.renderers.PandasXlsxRenderer",
         "core.renderers.WordcloudRenderer",
     ],
+    # paging 설정
+    "PAGE_SIZE": env.int("REST_FRAMEWORK_PAGE_SIZE", default=5),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",  # ListModelMixin class를 상속받은 모든 API 뷰에 페이지네이션 처리
 }

@@ -1,4 +1,6 @@
+from django.db.models import Model, QuerySet
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from rest_framework.views import APIView
 from .models import Post
 from .serializers import PostSerializer, PostListSerializer, PostDetailSerializer
 from django.shortcuts import get_object_or_404
@@ -15,14 +17,116 @@ from rest_framework.generics import (
     DestroyAPIView,
 )
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import (
+    PageNumberPagination,
+    LimitOffsetPagination,
+    CursorPagination,
+)
 
-from core.mixins import JSONResponseWrapperMixin
-from core.permissions import IsAuthorOrReadonly
+from core.mixins import (
+    JSONResponseWrapperMixin,
+    PermissionDebugMixin,
+    TestFuncPermissionMixin,
+    ActionBasedViewSetMixin,
+)
+from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
+from core.pagination import make_pagination_class
 
 # api.py ~= views.py
 
 # api_view 사용 시 rest_framework의 Response, Resquest를 사용
+
+
+# APIView마다 다른 page_size를 지정하고 싶을 경우, PageNumberPagination를 상속받아 page_size 값 재정의
+class PageNumberPagination10(PageNumberPagination):
+    page_size = 10
+
+
+# 최대 limit 값을 다르게 설정하고 싶을 경우, LimitOffsetPagination를 상속받아 max_limit 값 재정의 (default: None -> 제한없음)
+class LimitOffsetPagination10(LimitOffsetPagination):
+    max_limit = 10
+
+
+class pkCursorPagination(CursorPagination):
+    ordering = "-pk"
+
+
+class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrReadonly]
+    queryset_map = {
+        "list": PostListSerializer.get_optimized_queryset(),
+        "retrieve": PostDetailSerializer.get_optimized_queryset(),
+        "update": PostSerializer.get_optimized_queryset(),
+        "partial_update": PostSerializer.get_optimized_queryset(),
+        "destroy": Post.objects.all(),
+    }
+    serializer_class_map = {
+        "list": PostListSerializer,
+        "retrieve": PostDetailSerializer,
+        "create": PostSerializer,
+        "update": PostSerializer,
+        "partial_update": PostSerializer,
+    }
+
+    # pagination_class를 지정해, 각 API마다 서로 다른 pagination class 지정 가능
+
+    # PageNumberPagination 사용
+    # pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination10
+    # pagination_class = make_pagination_class(page_size=8)
+
+    # LimitOffsetPagination 사용
+    # pagination_class = LimitOffsetPagination
+    # pagination_class = LimitOffsetPagination10
+    # pagination_class = make_pagination_class("limit_offset", page_size=4, max_limit=6)
+
+    # CursorPagination 사용
+    # pagination_class = CursorPagination  # cursor 기준 값이 created로 지정되어있어, 기준 값 변경을 위해서 클래스 재정의
+    # parser_classes = pkCursorPagination
+    pagination_class = make_pagination_class(
+        "cursor", page_size=3, cursor_ordering="+id"
+    )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    # def get_queryset(self):
+    #     if self.action == "list":
+    #         self.queryset = PostListSerializer.get_optimized_queryset()
+    #     elif self.action == "retrieve":
+    #         self.queryset = PostDetailSerializer.get_optimized_queryset()
+    #     elif self.action in ("update", "partial_update"):
+    #         self.queryset = PostSerializer.get_optimized_queryset()
+    #     elif self.action == "destroy":
+    #         self.queryset = Post.objects.all()
+    #     return super().get_queryset()
+
+    # def get_serializer_class(self):
+    #     # self.request.method == "GET"  # "list" or "retrieve" => self.action 속성 사용
+    #     if self.action == "list":
+    #         return PostListSerializer
+    #     elif self.action == "retrieve":
+    #         return PostDetailSerializer
+    #     elif self.action in ("create", "update", "partial_update"):
+    #         return PostSerializer
+    #     return super().get_serializer_class()
+
+
+# post_list = PostModelViewSet.as_view(actions={"get": "list", "post": "create"})
+
+
+# post_detail = PostModelViewSet.as_view(
+#     actions={
+#         "get": "retrieve",
+#         "put": "update",
+#         "patch": "partial_update",
+#         "delete": "destroy",
+#     }
+# )
 
 
 # @api_view(["GET"])
@@ -40,69 +144,97 @@ from core.permissions import IsAuthorOrReadonly
 
 
 # django generic class 기반으로 변경
-class PostListAPIView(JSONResponseWrapperMixin, ListAPIView):
-    queryset = PostListSerializer.get_optimized_queryset()
-    serializer_class = PostListSerializer
+# class PostListAPIView(JSONResponseWrapperMixin, PermissionDebugMixin, ListAPIView):
+#     queryset = PostListSerializer.get_optimized_queryset()
+#     serializer_class = PostListSerializer
 
-    # 반복되는 내용을 사용해 mixin class 정의 (core.mixins)
-    # def finalize_response(self, request, response, *args, **kwargs):
-    #     if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
-    #         # response.data  # 원본 응답 데이터 : ReturnList
-    #         response.data = ReturnDict(
-    #             {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
-    #             serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
-    #         )
+#     # 반복되는 내용을 사용해 mixin class 정의 (core.mixins)
+#     # def finalize_response(self, request, response, *args, **kwargs):
+#     #     if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
+#     #         # response.data  # 원본 응답 데이터 : ReturnList
+#     #         response.data = ReturnDict(
+#     #             {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
+#     #             serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
+#     #         )
 
-    #     return super().finalize_response(request, response, *args, **kwargs)
-
-
-post_list = PostListAPIView.as_view()
+#     #     return super().finalize_response(request, response, *args, **kwargs)
 
 
-# @api_view(["GET"])
-# def post_detail(request: Request, pk: int) -> Response:
-#     post = get_object_or_404(Post, pk=pk)
-
-#     serializer = PostDetailSerializer(instance=post)
-#     detail_data: ReturnDict = serializer.data
-
-#     return Response(detail_data)
+# post_list = PostListAPIView.as_view()
 
 
-class PostRetrieveAPIView(JSONResponseWrapperMixin, RetrieveAPIView):
-    queryset = PostDetailSerializer.get_optimized_queryset()
-    serializer_class = PostDetailSerializer
+# # @api_view(["GET"])
+# # def post_detail(request: Request, pk: int) -> Response:
+# #     post = get_object_or_404(Post, pk=pk)
+
+# #     serializer = PostDetailSerializer(instance=post)
+# #     detail_data: ReturnDict = serializer.data
+
+# #     return Response(detail_data)
 
 
-post_detail = PostRetrieveAPIView.as_view()
+# class PostRetrieveAPIView(
+#     JSONResponseWrapperMixin, PermissionDebugMixin, RetrieveAPIView
+# ):
+#     queryset = PostDetailSerializer.get_optimized_queryset()
+#     serializer_class = PostDetailSerializer
 
 
-class PostCreateAPIView(CreateAPIView):
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
-
-    # 전달받은 내용이 아닌, 추가 내용 전달을 위해서 perform_create 메서드 재정의
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+# post_detail = PostRetrieveAPIView.as_view()
 
 
-post_new = PostCreateAPIView.as_view()
+# class PostCreateAPIView(PermissionDebugMixin, CreateAPIView):
+#     serializer_class = PostSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     # 전달받은 내용이 아닌, 추가 내용 전달을 위해서 perform_create 메서드 재정의
+#     def perform_create(self, serializer):
+#         serializer.save(author=self.request.user)
 
 
-class PostUpdateAPIView(UpdateAPIView):
-    queryset = PostSerializer.get_optimized_queryset()
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthorOrReadonly]
+# post_new = PostCreateAPIView.as_view()
 
 
-post_edit = PostUpdateAPIView.as_view()
+# class PostUpdateAPIView(PermissionDebugMixin, TestFuncPermissionMixin, UpdateAPIView):
+#     queryset = PostSerializer.get_optimized_queryset()
+#     serializer_class = PostSerializer
+#     # permission_classes = [IsAuthorOrReadonly]
+#     # permission_classes = [
+#     #     make_drf_permission_class(
+#     #         class_name="PostUpdateAPIView",
+#     #         permit_safe_methods=True,
+#     #         has_permission_test_func=lambda request, view: request.user.is_authenticated,
+#     #         has_object_permission_test_func=(
+#     #             lambda request, view, obj: obj.author == request.user
+#     #         ),
+#     #     ),
+#     # ]
+
+#     # TestFuncPermissionMixin에서 상속받아
+#     # APIView에서 has_permission와 has_object_permission 메서드를 직접 재정의 가능
+#     TEST_FUNC_PERMISSION_CLASS_NAME = "PostUpdateAPIView"
+
+#     def has_permission(self, request: Request, view: APIView) -> bool:
+#         if request.method in SAFE_METHODS:
+#             return True
+#         return request.user.is_authenticated
+
+#     def has_object_permission(
+#         self, request: Request, view: APIView, obj: Model
+#     ) -> bool:
+#         if request.method in SAFE_METHODS:
+#             return True
+#         return request.user == obj.author
 
 
-class PostDeleteAPIView(DestroyAPIView):
-    # 레코드 조회를 위해 쿼리셋 지정 필요
-    # 삭제에는 serializer 필요 X
-    queryset = Post.objects.all()
-    permission_classes = [IsAuthorOrReadonly]
+# post_edit = PostUpdateAPIView.as_view()
 
 
-post_delete = PostDeleteAPIView.as_view()
+# class PostDeleteAPIView(PermissionDebugMixin, DestroyAPIView):
+#     # 레코드 조회를 위해 쿼리셋 지정 필요
+#     # 삭제에는 serializer 필요 X
+#     queryset = Post.objects.all()
+#     permission_classes = [IsAuthorOrReadonly]
+
+
+# post_delete = PostDeleteAPIView.as_view()

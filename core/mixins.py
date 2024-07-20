@@ -2,6 +2,14 @@ from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.utils.serializer_helpers import ReturnDict
 from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework import permissions
+from rest_framework.views import APIView
+
+from typing import List
+from colorama import Fore
+from django.conf import settings
+from django.db.models import Model, QuerySet
+from .permissions import make_drf_permission_class
 
 
 class JSONResponseWrapperMixin:
@@ -26,3 +34,94 @@ class JSONResponseWrapperMixin:
             )
 
         return super().finalize_response(request, response, *args, **kwargs)
+
+
+class PermissionDebugMixin:
+    if settings.DEBUG:
+
+        def get_label_text(self, is_permit: bool) -> str:
+            return (
+                f"{Fore.GREEN}Permit{Fore.RESET}"  # colorama 라이브러리 활용
+                if is_permit
+                else f"{Fore.RED}Deny{Fore.RESET}"
+            )
+
+        def check_permissions(self, request: Request) -> None:
+            print(f"{request.method} {request.path} has_permission")
+            for permission in self.get_permissions():
+                is_permit: bool = permission.has_permission(request, self)
+                print(
+                    f"\t{permission.__class__.__name__} = {self.get_label_text(is_permit)}"
+                )
+                if not is_permit:
+                    self.permission_denied(
+                        request,
+                        message=getattr(permission, "message", None),
+                        code=getattr(permission, "code", None),
+                    )
+
+        def check_object_permissions(self, request: Request, obj: Model) -> None:
+            print(f"{request.method} {request.path} has_object_permission")
+            for permission in self.get_permissions():
+                is_permit: bool = permission.has_object_permission(request, self, obj)
+                print(
+                    f"\t{permission.__class__.__name__} = {self.get_label_text(is_permit)}"
+                )
+                if not is_permit:
+                    self.permission_denied(
+                        request,
+                        message=getattr(permission, "message", None),
+                        code=getattr(permission, "code", None),
+                    )
+
+
+class TestFuncPermissionMixin:
+    TEST_FUNC_PERMISSION_CLASS_NAME = None
+
+    @classmethod
+    def get_test_func_permission_instance(cls) -> permissions.BasePermission:
+        permission_class = make_drf_permission_class(
+            class_name=cls.TEST_FUNC_PERMISSION_CLASS_NAME or cls.__name__,
+            # *_test_func_name 속성이 지정되면, 이 권한 클래스가 사용된 APIView 클래스에서
+            # 지정 이름의 메서드를 찾습니다.
+            has_permission_test_func_name="has_permission",
+            has_object_permission_test_func_name="has_object_permission",
+        )
+        return permission_class()
+
+    def get_permissions(self) -> List[permissions.BasePermission]:
+        # 기존 permission_classes 설정에 권한 정책을 추가하는 방식으로 동작
+        return super().get_permissions() + [self.get_test_func_permission_instance()]
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return True
+
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Model
+    ) -> bool:
+        return True
+
+
+class ActionBasedViewSetMixin:
+    queryset_map = {}
+    serializer_class_map = {}
+
+    def get_queryset(self) -> QuerySet:
+        qs = self.queryset_map.get(self.action, None)
+        if qs is not None:
+            # 값이 있을 경우 인스턴스 변수로 할당
+            # - 부모의 get_queryset 메서드의 self.queryset 코드에서는
+            # queryset의 인스턴스 변수가 없으면 클래스 변수 queryset 참조
+            self.queryset = qs
+
+        return super().get_queryset()
+
+    def get_serializer_class(self):
+        cls = self.serializer_class_map.get(self.action, None)
+        if cls is not None:
+            # 값이 있을 경우 인스턴스 변수로 할당
+            # - 부모의 get_serializer_class 메서드의 self.get_serializer_class 코드에서는
+            # get_serializer_class 인스턴스 변수가 없으면 클래스 변수 get_serializer_class 참조
+            self.serializer_class = cls
+
+        return super().get_serializer_class()
