@@ -19,6 +19,7 @@ from rest_framework.generics import (
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import PageNumberPagination
 
 from core.mixins import (
     JSONResponseWrapperMixin,
@@ -51,6 +52,9 @@ class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
         "update": PostSerializer,
         "partial_update": PostSerializer,
     }
+
+    # pagination_class를 지정해, 각 API마다 서로 다른 pagination class 지정 가능
+    pagination_class = PageNumberPagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
