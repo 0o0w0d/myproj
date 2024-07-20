@@ -88,7 +88,7 @@ class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
     # pagination_class = CursorPagination  # cursor 기준 값이 created로 지정되어있어, 기준 값 변경을 위해서 클래스 재정의
     # parser_classes = pkCursorPagination
     pagination_class = make_pagination_class(
-        "cursor", page_size=3, cursor_ordering="id"
+        "cursor", page_size=3, cursor_ordering="+id"
     )
 
     def perform_create(self, serializer):

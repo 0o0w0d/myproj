@@ -29,8 +29,9 @@ def make_pagination_class(
         cls_name = f"{base_cls_name}withDefaultLimit{page_size}AndMaxLimit{max_limit}"
         attrs = {"default_limit": page_size, "max_limit": max_limit}
     elif cls_type == "cursor":
+        cursor_ordering = re.sub(r"^\+", "", cursor_ordering)
         ordering = (cursor_ordering or "").title().replace("_", "")
-        ordering = re.sub(r"^[+-]", "", ordering)
+        ordering = re.sub(r"^-", "", ordering)
         cls_name = f"{base_cls_name}withPageSize{page_size}AndOrdering{ordering}"
         attrs = {"page_size": page_size, "ordering": cursor_ordering}
     else:
