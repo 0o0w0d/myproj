@@ -1,4 +1,4 @@
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from rest_framework.views import APIView
 from .models import Post
@@ -24,6 +24,7 @@ from core.mixins import (
     JSONResponseWrapperMixin,
     PermissionDebugMixin,
     TestFuncPermissionMixin,
+    ActionBasedViewSetMixin,
 )
 from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
 
@@ -32,34 +33,48 @@ from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
 # api_view 사용 시 rest_framework의 Response, Resquest를 사용
 
 
-class PostModelViewSet(ModelViewSet):
+class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthorOrReadonly]
+    queryset_map = {
+        "list": PostListSerializer.get_optimized_queryset(),
+        "retrieve": PostDetailSerializer.get_optimized_queryset(),
+        "update": PostSerializer.get_optimized_queryset(),
+        "partial_update": PostSerializer.get_optimized_queryset(),
+        "destroy": Post.objects.all(),
+    }
+    serializer_class_map = {
+        "list": PostListSerializer,
+        "retrieve": PostDetailSerializer,
+        "create": PostSerializer,
+        "update": PostSerializer,
+        "partial_update": PostSerializer,
+    }
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def get_queryset(self):
-        if self.action == "list":
-            self.queryset = PostListSerializer.get_optimized_queryset()
-        elif self.action == "retrieve":
-            self.queryset = PostDetailSerializer.get_optimized_queryset()
-        elif self.action in ("update", "partial_update"):
-            self.queryset = PostSerializer.get_optimized_queryset()
-        elif self.action == "destroy":
-            self.queryset = Post.objects.all()
-        return super().get_queryset()
+    # def get_queryset(self):
+    #     if self.action == "list":
+    #         self.queryset = PostListSerializer.get_optimized_queryset()
+    #     elif self.action == "retrieve":
+    #         self.queryset = PostDetailSerializer.get_optimized_queryset()
+    #     elif self.action in ("update", "partial_update"):
+    #         self.queryset = PostSerializer.get_optimized_queryset()
+    #     elif self.action == "destroy":
+    #         self.queryset = Post.objects.all()
+    #     return super().get_queryset()
 
-    def get_serializer_class(self):
-        # self.request.method == "GET"  # "list" or "retrieve" => self.action 속성 사용
-        if self.action == "list":
-            return PostListSerializer
-        elif self.action == "retrieve":
-            return PostDetailSerializer
-        elif self.action in ("create", "update", "partial_update"):
-            return PostSerializer
-        return super().get_serializer_class()
+    # def get_serializer_class(self):
+    #     # self.request.method == "GET"  # "list" or "retrieve" => self.action 속성 사용
+    #     if self.action == "list":
+    #         return PostListSerializer
+    #     elif self.action == "retrieve":
+    #         return PostDetailSerializer
+    #     elif self.action in ("create", "update", "partial_update"):
+    #         return PostSerializer
+    #     return super().get_serializer_class()
 
 
 # post_list = PostModelViewSet.as_view(actions={"get": "list", "post": "create"})
