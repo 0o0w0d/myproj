@@ -1,0 +1,11 @@
+colorama==0.4.6 
+factory-boy==3.3.0 
+faker==26.0.0 
+iniconfig==2.0.0 
+packaging==24.1 
+pluggy==1.5.0 
+pytest-django==4.8.0 
+pytest-testdox==3.1.0 
+pytest==8.2.2 
+python-dateutil==2.9.0.post0 
+six==1.16.0 
