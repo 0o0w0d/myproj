@@ -19,7 +19,7 @@ from rest_framework.generics import (
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
 from core.mixins import (
     JSONResponseWrapperMixin,
@@ -38,6 +38,11 @@ from core.pagination import make_pagination_class
 # APIView마다 다른 page_size를 지정하고 싶을 경우, PageNumberPagination를 상속받아 page_size 값 재정의
 class PageNumberPagination10(PageNumberPagination):
     page_size = 10
+
+
+# 최대 limit 값을 다르게 설정하고 싶을 경우, LimitOffsetPagination를 상속받아 max_limit 값 재정의 (default: None -> 제한없음)
+class LimitOffsetPagination10(LimitOffsetPagination):
+    max_limit = 10
 
 
 class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
@@ -64,7 +69,13 @@ class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
 
     # pagination_class = PageNumberPagination10
 
-    pagination_class = make_pagination_class(page_size=8)
+    # pagination_class = make_pagination_class(page_size=8)
+
+    # pagination_class = LimitOffsetPagination
+
+    # pagination_class = LimitOffsetPagination10
+
+    pagination_class = make_pagination_class("limit_offset", page_size=4, max_limit=6)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
