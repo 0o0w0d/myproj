@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title>HTTP Call</title>
+</head>
+<body>
+
+<h1>HTTP Call</h1>
+<pre id="result"></pre>
+
+<script>
+  async function fetchAsync() {
+    let html;
+    try {
+      // http://localhost:3000 페이지에서 http://localhost:8000 주소로 HTTP 요청
+      // HTTP 요청을 보내는 웹페이지의 프로토콜/호스트/포트가 같을 경우 요청 헤더에 Cookie가 자동 전송 => 다를 경우 Unauthorized 에러 발생
+      const response = await fetch("http://127.0.0.1:8000/blog/whoami/");
+      html = `상태코드: ${response.status}` + "\n\n" + await response.text();
+    } catch (error) {
+      html = "에러\n\n" + error.toString();
+    }
+    document.querySelector("#result").innerHTML = html;
+  }
+
+  fetchAsync();
+</script>
+
+</body>
+</html>
