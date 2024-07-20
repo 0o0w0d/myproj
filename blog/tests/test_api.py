@@ -70,7 +70,7 @@ def new_post() -> Post:
 
 
 @pytest.mark.it(
-    "게시물 목록 조회. 비인증 조회가 가능해야하며, 생성한 포스팅의 개수만큼 응답을 받아야 합니다."
+    "게시물 목록 조회. 비인증 조회가 가능해야하며, 생성한 포스팅의 개수만큼 응답을 받아야 합니다. 응답에서 content 필드가 없어야 합니다."
 )
 @pytest.mark.django_db  # pytest DB 접근 허용
 def test_post_list(unauthenticated_api_client):
@@ -80,6 +80,7 @@ def test_post_list(unauthenticated_api_client):
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
     assert len(post_list) == len(response.data)
+    assert all("content" not in post for post in response.data)
 
 
 @pytest.mark.it(

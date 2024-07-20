@@ -40,6 +40,27 @@ class PostModelViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_queryset(self):
+        if self.action == "list":
+            self.queryset = PostListSerializer.get_optimized_queryset()
+        elif self.action == "retrieve":
+            self.queryset = PostDetailSerializer.get_optimized_queryset()
+        elif self.action in ("update", "partial_update"):
+            self.queryset = PostSerializer.get_optimized_queryset()
+        elif self.action == "destroy":
+            self.queryset = Post.objects.all()
+        return super().get_queryset()
+
+    def get_serializer_class(self):
+        # self.request.method == "GET"  # "list" or "retrieve" => self.action 속성 사용
+        if self.action == "list":
+            return PostListSerializer
+        elif self.action == "retrieve":
+            return PostDetailSerializer
+        elif self.action in ("create", "update", "partial_update"):
+            return PostSerializer
+        return super().get_serializer_class()
+
 
 # post_list = PostModelViewSet.as_view(actions={"get": "list", "post": "create"})
 
