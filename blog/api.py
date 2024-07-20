@@ -28,10 +28,16 @@ from core.mixins import (
     ActionBasedViewSetMixin,
 )
 from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
+from core.pagination import make_pagination_class
 
 # api.py ~= views.py
 
 # api_view 사용 시 rest_framework의 Response, Resquest를 사용
+
+
+# APIView마다 다른 page_size를 지정하고 싶을 경우, PageNumberPagination를 상속받아 page_size 값 재정의
+class PageNumberPagination10(PageNumberPagination):
+    page_size = 10
 
 
 class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
@@ -54,7 +60,11 @@ class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
     }
 
     # pagination_class를 지정해, 각 API마다 서로 다른 pagination class 지정 가능
-    pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination
+
+    # pagination_class = PageNumberPagination10
+
+    pagination_class = make_pagination_class(page_size=8)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
