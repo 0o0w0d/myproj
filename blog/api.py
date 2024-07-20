@@ -19,7 +19,11 @@ from rest_framework.generics import (
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import (
+    PageNumberPagination,
+    LimitOffsetPagination,
+    CursorPagination,
+)
 
 from core.mixins import (
     JSONResponseWrapperMixin,
@@ -45,6 +49,10 @@ class LimitOffsetPagination10(LimitOffsetPagination):
     max_limit = 10
 
 
+class pkCursorPagination(CursorPagination):
+    ordering = "-pk"
+
+
 class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
@@ -65,17 +73,23 @@ class PostModelViewSet(ActionBasedViewSetMixin, ModelViewSet):
     }
 
     # pagination_class를 지정해, 각 API마다 서로 다른 pagination class 지정 가능
+
+    # PageNumberPagination 사용
     # pagination_class = PageNumberPagination
-
     # pagination_class = PageNumberPagination10
-
     # pagination_class = make_pagination_class(page_size=8)
 
+    # LimitOffsetPagination 사용
     # pagination_class = LimitOffsetPagination
-
     # pagination_class = LimitOffsetPagination10
+    # pagination_class = make_pagination_class("limit_offset", page_size=4, max_limit=6)
 
-    pagination_class = make_pagination_class("limit_offset", page_size=4, max_limit=6)
+    # CursorPagination 사용
+    # pagination_class = CursorPagination  # cursor 기준 값이 created로 지정되어있어, 기준 값 변경을 위해서 클래스 재정의
+    # parser_classes = pkCursorPagination
+    pagination_class = make_pagination_class(
+        "cursor", page_size=3, cursor_ordering="id"
+    )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
