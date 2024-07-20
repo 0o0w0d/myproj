@@ -18,6 +18,7 @@ from rest_framework.generics import (
 )
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from rest_framework.viewsets import ModelViewSet
 
 from core.mixins import (
     JSONResponseWrapperMixin,
@@ -29,6 +30,28 @@ from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
 # api.py ~= views.py
 
 # api_view 사용 시 rest_framework의 Response, Resquest를 사용
+
+
+class PostModelViewSet(ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrReadonly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+post_list = PostModelViewSet.as_view(actions={"get": "list", "post": "create"})
+
+
+post_detail = PostModelViewSet.as_view(
+    actions={
+        "get": "retrieve",
+        "put": "update",
+        "patch": "partial_update",
+        "delete": "destroy",
+    }
+)
 
 
 # @api_view(["GET"])
@@ -46,97 +69,97 @@ from core.permissions import IsAuthorOrReadonly, make_drf_permission_class
 
 
 # django generic class 기반으로 변경
-class PostListAPIView(JSONResponseWrapperMixin, PermissionDebugMixin, ListAPIView):
-    queryset = PostListSerializer.get_optimized_queryset()
-    serializer_class = PostListSerializer
+# class PostListAPIView(JSONResponseWrapperMixin, PermissionDebugMixin, ListAPIView):
+#     queryset = PostListSerializer.get_optimized_queryset()
+#     serializer_class = PostListSerializer
 
-    # 반복되는 내용을 사용해 mixin class 정의 (core.mixins)
-    # def finalize_response(self, request, response, *args, **kwargs):
-    #     if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
-    #         # response.data  # 원본 응답 데이터 : ReturnList
-    #         response.data = ReturnDict(
-    #             {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
-    #             serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
-    #         )
+#     # 반복되는 내용을 사용해 mixin class 정의 (core.mixins)
+#     # def finalize_response(self, request, response, *args, **kwargs):
+#     #     if isinstance(request.accepted_renderer, (JSONRenderer, BrowsableAPIRenderer)):
+#     #         # response.data  # 원본 응답 데이터 : ReturnList
+#     #         response.data = ReturnDict(
+#     #             {"ok": True, "result": response.data},  # 원본 데이터를 래핑하여 전달
+#     #             serializer=response.data.serializer,  # 원본 데이터의 serializer 추가 전달
+#     #         )
 
-    #     return super().finalize_response(request, response, *args, **kwargs)
-
-
-post_list = PostListAPIView.as_view()
+#     #     return super().finalize_response(request, response, *args, **kwargs)
 
 
-# @api_view(["GET"])
-# def post_detail(request: Request, pk: int) -> Response:
-#     post = get_object_or_404(Post, pk=pk)
-
-#     serializer = PostDetailSerializer(instance=post)
-#     detail_data: ReturnDict = serializer.data
-
-#     return Response(detail_data)
+# post_list = PostListAPIView.as_view()
 
 
-class PostRetrieveAPIView(
-    JSONResponseWrapperMixin, PermissionDebugMixin, RetrieveAPIView
-):
-    queryset = PostDetailSerializer.get_optimized_queryset()
-    serializer_class = PostDetailSerializer
+# # @api_view(["GET"])
+# # def post_detail(request: Request, pk: int) -> Response:
+# #     post = get_object_or_404(Post, pk=pk)
+
+# #     serializer = PostDetailSerializer(instance=post)
+# #     detail_data: ReturnDict = serializer.data
+
+# #     return Response(detail_data)
 
 
-post_detail = PostRetrieveAPIView.as_view()
+# class PostRetrieveAPIView(
+#     JSONResponseWrapperMixin, PermissionDebugMixin, RetrieveAPIView
+# ):
+#     queryset = PostDetailSerializer.get_optimized_queryset()
+#     serializer_class = PostDetailSerializer
 
 
-class PostCreateAPIView(PermissionDebugMixin, CreateAPIView):
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
-
-    # 전달받은 내용이 아닌, 추가 내용 전달을 위해서 perform_create 메서드 재정의
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+# post_detail = PostRetrieveAPIView.as_view()
 
 
-post_new = PostCreateAPIView.as_view()
+# class PostCreateAPIView(PermissionDebugMixin, CreateAPIView):
+#     serializer_class = PostSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     # 전달받은 내용이 아닌, 추가 내용 전달을 위해서 perform_create 메서드 재정의
+#     def perform_create(self, serializer):
+#         serializer.save(author=self.request.user)
 
 
-class PostUpdateAPIView(PermissionDebugMixin, TestFuncPermissionMixin, UpdateAPIView):
-    queryset = PostSerializer.get_optimized_queryset()
-    serializer_class = PostSerializer
-    # permission_classes = [IsAuthorOrReadonly]
-    # permission_classes = [
-    #     make_drf_permission_class(
-    #         class_name="PostUpdateAPIView",
-    #         permit_safe_methods=True,
-    #         has_permission_test_func=lambda request, view: request.user.is_authenticated,
-    #         has_object_permission_test_func=(
-    #             lambda request, view, obj: obj.author == request.user
-    #         ),
-    #     ),
-    # ]
-
-    # TestFuncPermissionMixin에서 상속받아
-    # APIView에서 has_permission와 has_object_permission 메서드를 직접 재정의 가능
-    TEST_FUNC_PERMISSION_CLASS_NAME = "PostUpdateAPIView"
-
-    def has_permission(self, request: Request, view: APIView) -> bool:
-        if request.method in SAFE_METHODS:
-            return True
-        return request.user.is_authenticated
-
-    def has_object_permission(
-        self, request: Request, view: APIView, obj: Model
-    ) -> bool:
-        if request.method in SAFE_METHODS:
-            return True
-        return request.user == obj.author
+# post_new = PostCreateAPIView.as_view()
 
 
-post_edit = PostUpdateAPIView.as_view()
+# class PostUpdateAPIView(PermissionDebugMixin, TestFuncPermissionMixin, UpdateAPIView):
+#     queryset = PostSerializer.get_optimized_queryset()
+#     serializer_class = PostSerializer
+#     # permission_classes = [IsAuthorOrReadonly]
+#     # permission_classes = [
+#     #     make_drf_permission_class(
+#     #         class_name="PostUpdateAPIView",
+#     #         permit_safe_methods=True,
+#     #         has_permission_test_func=lambda request, view: request.user.is_authenticated,
+#     #         has_object_permission_test_func=(
+#     #             lambda request, view, obj: obj.author == request.user
+#     #         ),
+#     #     ),
+#     # ]
+
+#     # TestFuncPermissionMixin에서 상속받아
+#     # APIView에서 has_permission와 has_object_permission 메서드를 직접 재정의 가능
+#     TEST_FUNC_PERMISSION_CLASS_NAME = "PostUpdateAPIView"
+
+#     def has_permission(self, request: Request, view: APIView) -> bool:
+#         if request.method in SAFE_METHODS:
+#             return True
+#         return request.user.is_authenticated
+
+#     def has_object_permission(
+#         self, request: Request, view: APIView, obj: Model
+#     ) -> bool:
+#         if request.method in SAFE_METHODS:
+#             return True
+#         return request.user == obj.author
 
 
-class PostDeleteAPIView(PermissionDebugMixin, DestroyAPIView):
-    # 레코드 조회를 위해 쿼리셋 지정 필요
-    # 삭제에는 serializer 필요 X
-    queryset = Post.objects.all()
-    permission_classes = [IsAuthorOrReadonly]
+# post_edit = PostUpdateAPIView.as_view()
 
 
-post_delete = PostDeleteAPIView.as_view()
+# class PostDeleteAPIView(PermissionDebugMixin, DestroyAPIView):
+#     # 레코드 조회를 위해 쿼리셋 지정 필요
+#     # 삭제에는 serializer 필요 X
+#     queryset = Post.objects.all()
+#     permission_classes = [IsAuthorOrReadonly]
+
+
+# post_delete = PostDeleteAPIView.as_view()

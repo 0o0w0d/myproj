@@ -79,7 +79,7 @@ def test_post_list(unauthenticated_api_client):
     url = reverse("blog:api-v1:post_list")
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
-    assert len(post_list) == len(response.data["result"])
+    assert len(post_list) == len(response.data)
 
 
 @pytest.mark.it(
@@ -92,7 +92,7 @@ def test_post_retrieve(unauthenticated_api_client):
     url: str = reverse("blog:api-v1:post_detail", args=[new_post.pk])
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
-    assert new_post.title == response.data["result"]["title"]
+    assert new_post.title == response.data["title"]
 
 
 @pytest.mark.it("인증하지 않은 요청은 생성 요청 거부")
