@@ -76,7 +76,7 @@ def new_post() -> Post:
 def test_post_list(unauthenticated_api_client):
     post_list = [PostFactory() for __ in range(10)]
 
-    url = reverse("blog:api-v1:post_list")
+    url = reverse("blog:api-v1:post-list")
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
     assert len(post_list) == len(response.data)
@@ -89,7 +89,7 @@ def test_post_list(unauthenticated_api_client):
 def test_post_retrieve(unauthenticated_api_client):
     new_post = PostFactory()
 
-    url: str = reverse("blog:api-v1:post_detail", args=[new_post.pk])
+    url: str = reverse("blog:api-v1:post-detail", args=[new_post.pk])
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
     assert new_post.title == response.data["title"]
@@ -98,7 +98,7 @@ def test_post_retrieve(unauthenticated_api_client):
 @pytest.mark.it("인증하지 않은 요청은 생성 요청 거부")
 @pytest.mark.django_db
 def test_unauthenticated_user_cant_create_post(unauthenticated_api_client):
-    url = reverse("blog:api-v1:post_new")
+    url = reverse("blog:api-v1:post-list")
     response: Response = unauthenticated_api_client.post(url, data={})
     assert status.HTTP_403_FORBIDDEN == response.status_code
 
@@ -106,7 +106,7 @@ def test_unauthenticated_user_cant_create_post(unauthenticated_api_client):
 @pytest.mark.it("인증된 요청은 생성 요청 성공")
 @pytest.mark.django_db
 def test_authenticated_user_can_create_post(api_client_with_new_user_basic_auth, faker):
-    url = reverse("blog:api-v1:post_new")
+    url = reverse("blog:api-v1:post-list")
     data = {"title": faker.sentence(), "content": faker.paragraph()}
     response: Response = api_client_with_new_user_basic_auth.post(url, data=data)
     assert status.HTTP_201_CREATED == response.status_code
@@ -122,7 +122,7 @@ def test_authenticated_user_can_create_post(api_client_with_new_user_basic_auth,
 def test_missing_required_fields_cant_create_post(
     api_client_with_new_user_basic_auth, title, content
 ):
-    url = reverse("blog:api-v1:post_new")
+    url = reverse("blog:api-v1:post-list")
     data = {"title": title, "content": content}
     response: Response = api_client_with_new_user_basic_auth.post(url, data=data)
     assert status.HTTP_400_BAD_REQUEST == response.status_code
@@ -142,7 +142,7 @@ def test_missing_required_fields_cant_create_post(
 @pytest.mark.it("작성자가 아닌 유저가 수정 요청하면 거부")
 @pytest.mark.django_db
 def test_non_author_cant_update_post(new_post, api_client_with_new_user_basic_auth):
-    url = reverse("blog:api-v1:post_edit", args=[new_post.pk])
+    url = reverse("blog:api-v1:post-detail", args=[new_post.pk])
     response: Response = api_client_with_new_user_basic_auth.patch(url, data={})
     assert status.HTTP_403_FORBIDDEN == response.status_code
 
@@ -154,7 +154,7 @@ def test_author_can_update_post(faker):
     user = create_user(raw_password=raw_password)
     new_post = PostFactory(author=user)
 
-    url = reverse("blog:api-v1:post_edit", args=[new_post.pk])
+    url = reverse("blog:api-v1:post-detail", args=[new_post.pk])
     edit_title = faker.sentence()
 
     apiclient = get_api_client_with_basic_auth(user=user, raw_password=raw_password)
@@ -171,7 +171,7 @@ class TestPostDeleteGroup:
     def test_non_author_cant_delete_post(
         self, new_post, api_client_with_new_user_basic_auth
     ):
-        url = reverse("blog:api-v1:post_delete", args=[new_post.pk])
+        url = reverse("blog:api-v1:post-detail", args=[new_post.pk])
         response: Response = api_client_with_new_user_basic_auth.delete(url)
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
@@ -182,7 +182,7 @@ class TestPostDeleteGroup:
         user = create_user(raw_password=password)
         new_post = PostFactory(author=user)
 
-        url = reverse("blog:api-v1:post_delete", args=[new_post.pk])
+        url = reverse("blog:api-v1:post-detail", args=[new_post.pk])
         apiclient = get_api_client_with_basic_auth(user, password)
         response = apiclient.delete(url)
         assert status.HTTP_204_NO_CONTENT == response.status_code

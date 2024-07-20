@@ -41,17 +41,17 @@ class PostModelViewSet(ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-post_list = PostModelViewSet.as_view(actions={"get": "list", "post": "create"})
+# post_list = PostModelViewSet.as_view(actions={"get": "list", "post": "create"})
 
 
-post_detail = PostModelViewSet.as_view(
-    actions={
-        "get": "retrieve",
-        "put": "update",
-        "patch": "partial_update",
-        "delete": "destroy",
-    }
-)
+# post_detail = PostModelViewSet.as_view(
+#     actions={
+#         "get": "retrieve",
+#         "put": "update",
+#         "patch": "partial_update",
+#         "delete": "destroy",
+#     }
+# )
 
 
 # @api_view(["GET"])
