@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     # "django.contrib.staticfiles",
     "django_components.safer_staticfiles",
     # third apps
+    "corsheaders",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_components",
@@ -80,6 +81,7 @@ if DEBUG:
     ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -249,3 +251,16 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": env.int("REST_FRAMEWORK_PAGE_SIZE", default=5),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",  # ListModelMixin class를 상속받은 모든 API 뷰에 페이지네이션 처리
 }
+
+
+# django-cors-headers
+# https://github.com/adamchainz/django-cors-headers
+
+# CORS 허용 주소
+# CorsMiddleware를 통해 응답 헤더에 Access-Control-Allow-Origin로 아래 주소 추가
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
+
+
+# 다른 출처로부터의 요청에 쿠키 자동 전송 허용 여부
+# 응답 헤더에 Access-Control-Allow-Credentials=true 추가
+CORS_ALLOW_CREDENTIALS = True

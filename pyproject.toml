@@ -25,6 +25,7 @@ pandas = "^2.2.2"
 openpyxl = "^3.1.5"
 wordcloud = "^1.9.3"
 colorama = "^0.4.6"
+django-cors-headers = "^4.4.0"
 
 
 [tool.poetry.group.dev.dependencies]

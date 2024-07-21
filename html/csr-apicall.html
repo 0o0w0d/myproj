@@ -12,8 +12,14 @@
       async function fetchAsync() {
         let html;
         try {
+          // HTTP 요청으로 쿠키 전송을 위한 설정
+          const config = { credentials: "include" };
+
           // http://localhost:3000 페이지에서 http://127.0.0.1:8000 주소로 HTTP 요청
-          const response = await fetch("http://127.0.0.1:8000/blog/whoami/");
+          const response = await fetch(
+            "http://127.0.0.1:8000/blog/whoami/",
+            config,
+          );
           html =
             `상태코드: ${response.status}` + "\n\n" + (await response.text());
         } catch (error) {
