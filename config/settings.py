@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     # "django.contrib.staticfiles",
     "django_components.safer_staticfiles",
     # third apps
-    "corsheaders",
+    # "corsheaders",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_components",
@@ -81,7 +81,7 @@ if DEBUG:
     ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    # "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -167,7 +167,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = env.str("STATIC_URL", default="static/")
+STATIC_URL = env.str("STATIC_URL", default="djstatic/")
 
 STATIC_ROOT = env.str("STATIC_ROOT", default=BASE_DIR / "staticfiles")
 
@@ -258,9 +258,9 @@ REST_FRAMEWORK = {
 
 # CORS 허용 주소
 # CorsMiddleware를 통해 응답 헤더에 Access-Control-Allow-Origin로 아래 주소 추가
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
+# CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
 
 
 # 다른 출처로부터의 요청에 쿠키 자동 전송 허용 여부
 # 응답 헤더에 Access-Control-Allow-Credentials=true 추가
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_CREDENTIALS = True
