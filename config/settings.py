@@ -42,7 +42,10 @@ SECRET_KEY = env.str(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+# django service domain
+# 포트 번호를 제외한 도메인 입력
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["api.mydj.com"])
+
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
@@ -59,7 +62,7 @@ INSTALLED_APPS = [
     # "django.contrib.staticfiles",
     "django_components.safer_staticfiles",
     # third apps
-    # "corsheaders",
+    "corsheaders",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_components",
@@ -81,7 +84,7 @@ if DEBUG:
     ]
 
 MIDDLEWARE = [
-    # "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -258,9 +261,14 @@ REST_FRAMEWORK = {
 
 # CORS 허용 주소
 # CorsMiddleware를 통해 응답 헤더에 Access-Control-Allow-Origin로 아래 주소 추가
-# CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
+# http/https 스키마 및 포트 번호를 포함한 전체 주소
+CORS_ALLOWED_ORIGINS = ["http://mydj.com:3000"]
 
 
 # 다른 출처로부터의 요청에 쿠키 자동 전송 허용 여부
 # 응답 헤더에 Access-Control-Allow-Credentials=true 추가
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# 지정 도메인에서 서브 도메인 포함하여 세션 쿠키 공유 설정
+#    -> sessionid 쿠키 생성 시 domain 속성으로 지정해 브라우저에서 서브 도메인 간에 쿠키 공유
+SESSION_COOKIE_DOMAIN = ".mydj.com"

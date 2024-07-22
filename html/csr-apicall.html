@@ -13,11 +13,14 @@
         let html;
         try {
           // HTTP 요청으로 쿠키 전송을 위한 설정
-          // const config = { credentials: "include" };
-          const config = {};
+          let config = {};
+          config = { credentials: "include" };
 
           // http://localhost:3000 페이지에서 http://127.0.0.1:8000 주소로 HTTP 요청
-          const response = await fetch("/blog/whoami/", config);
+          const response = await fetch(
+            "http://api.mydj.com:8000/blog/whoami/",
+            config,
+          );
           html =
             `상태코드: ${response.status}` + "\n\n" + (await response.text());
         } catch (error) {
