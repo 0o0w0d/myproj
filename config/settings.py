@@ -53,6 +53,8 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Application definition
 
 INSTALLED_APPS = [
+    # for asgi
+    "daphne",
     # django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -70,6 +72,7 @@ INSTALLED_APPS = [
     "template_partials",
     "django_htmx",
     "rest_framework",
+    "django_nextjs",
     "taggit",
     # local apps
     "core",
@@ -120,6 +123,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 
 # Database
@@ -289,4 +293,12 @@ CORS_ALLOW_CREDENTIALS = env.bool("CORS_ALLOW_CREDENTIALS", default=False)
 
 # 지정 도메인에서 서브 도메인 포함하여 세션 쿠키 공유 설정
 #    -> sessionid 쿠키 생성 시 domain 속성으로 지정해 브라우저에서 서브 도메인 간에 쿠키 공유 (빈 문자열일 경우를 대비해 or None 추가)
-SESSION_COOKIE_DOMAIN = env.str("SESSION_COOKIE_DOMAIN", default=None) or None
+# SESSION_COOKIE_DOMAIN = env.str("SESSION_COOKIE_DOMAIN", default=None) or None
+
+
+# django-nextjs
+
+NEXTJS_SETTINGS = {
+    # django를 경유한 next.js 요청을 전달할 Next.js 서버의 URL 지정
+    # "nextjs_server_url": "http://127.0.0.1:3000"  # default
+}
