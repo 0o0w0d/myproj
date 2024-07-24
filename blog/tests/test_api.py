@@ -79,7 +79,7 @@ def test_post_list(unauthenticated_api_client):
     url = reverse("blog:api-v1:post-list")
     response: Response = unauthenticated_api_client.get(url)
     assert status.HTTP_200_OK == response.status_code
-    assert len(post_list) == len(response.data)
+    assert len(post_list) == len(response.data['results'])
     assert all("content" not in post for post in response.data)
 
 

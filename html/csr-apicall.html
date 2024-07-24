@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HTTP Call</title>
+  </head>
+  <body>
+    <h1>HTTP Call</h1>
+    <pre id="result"></pre>
+
+    <script>
+      async function fetchAsync() {
+        let html;
+        try {
+          // HTTP 요청으로 쿠키 전송을 위한 설정
+          let config = {};
+          config = { credentials: "include" };
+
+          // http://localhost:3000 페이지에서 http://127.0.0.1:8000 주소로 HTTP 요청
+          const response = await fetch(
+            "http://api.mydj.com:8000/blog/whoami/",
+            config,
+          );
+          html =
+            `상태코드: ${response.status}` + "\n\n" + (await response.text());
+        } catch (error) {
+          html = "에러\n\n" + error.toString();
+        }
+        document.querySelector("#result").innerHTML = html;
+      }
+
+      fetchAsync();
+    </script>
+  </body>
+</html>

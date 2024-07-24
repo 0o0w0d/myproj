@@ -42,7 +42,10 @@ SECRET_KEY = env.str(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
+# django service domain
+# 포트 번호를 제외한 도메인 입력
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
@@ -50,6 +53,8 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Application definition
 
 INSTALLED_APPS = [
+    # for asgi
+    "daphne",
     # django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -59,6 +64,7 @@ INSTALLED_APPS = [
     # "django.contrib.staticfiles",
     "django_components.safer_staticfiles",
     # third apps
+    "corsheaders",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_components",
@@ -66,6 +72,7 @@ INSTALLED_APPS = [
     "template_partials",
     "django_htmx",
     "rest_framework",
+    "django_nextjs",
     "taggit",
     # local apps
     "core",
@@ -80,6 +87,7 @@ if DEBUG:
     ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -115,6 +123,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 
 # Database
@@ -165,7 +174,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = env.str("STATIC_URL", default="static/")
+STATIC_URL = env.str("STATIC_URL", default="djstatic/")
 
 STATIC_ROOT = env.str("STATIC_ROOT", default=BASE_DIR / "staticfiles")
 
@@ -248,4 +257,48 @@ REST_FRAMEWORK = {
     # paging 설정
     "PAGE_SIZE": env.int("REST_FRAMEWORK_PAGE_SIZE", default=5),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",  # ListModelMixin class를 상속받은 모든 API 뷰에 페이지네이션 처리
+}
+
+# 세션 쿠키 default setting
+
+# 세션 쿠키 이름
+SESSION_COOKIE_NAME = "sessionid"
+
+# 세션 쿠키 만료 시간 (단위: 초, default: 14일)
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2
+
+# 세션 쿠키 도메인 지정
+SESSION_COOKIE_DOMAIN = None
+
+# 세션 쿠키에 HttpOnly 옵션 추가 => JavaScript를 통한 쿠키 접근 X
+SESSION_COOKIE_HTTPONLY = True
+
+# 세션 쿠키가 브라우저를 닫을 때 자동으로 삭제 => 발행 시 만료 시간(max_age/expires) 설정하지 않음
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# 짧은 세션 만료에 대한 insight -> https://news.hada.io/topic?id=10424
+
+
+# django-cors-headers
+# https://github.com/adamchainz/django-cors-headers
+
+# CORS 허용 주소
+# CorsMiddleware를 통해 응답 헤더에 Access-Control-Allow-Origin로 아래 주소 추가
+# http/https 스키마 및 포트 번호를 포함한 전체 주소
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+
+# 다른 출처로부터의 요청에 쿠키 자동 전송 허용 여부
+# 응답 헤더에 Access-Control-Allow-Credentials=true 추가
+CORS_ALLOW_CREDENTIALS = env.bool("CORS_ALLOW_CREDENTIALS", default=False)
+
+# 지정 도메인에서 서브 도메인 포함하여 세션 쿠키 공유 설정
+#    -> sessionid 쿠키 생성 시 domain 속성으로 지정해 브라우저에서 서브 도메인 간에 쿠키 공유 (빈 문자열일 경우를 대비해 or None 추가)
+# SESSION_COOKIE_DOMAIN = env.str("SESSION_COOKIE_DOMAIN", default=None) or None
+
+
+# django-nextjs
+
+NEXTJS_SETTINGS = {
+    # django를 경유한 next.js 요청을 전달할 Next.js 서버의 URL 지정
+    # "nextjs_server_url": "http://127.0.0.1:3000"  # default
 }
