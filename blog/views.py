@@ -12,4 +12,4 @@ def whoami(request):
 async def index(request):
     # return render(request, "blog/index.html")
     # next.js 서버로 요청을 보내어 그 응답으로 뷰 응답
-    return await render_nextjs_page(request)
+    return await render_nextjs_page(request, "blog/index.html", context={})
